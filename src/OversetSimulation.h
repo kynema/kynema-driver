@@ -106,7 +106,11 @@ public:
     //! set number of nalu-wind instances
     void set_nw_start_rank(const std::vector<int>& start_ranks)
     {
-        m_nw_start_rank = start_ranks;
+        if (!start_ranks.empty()) {
+            m_nw_start_rank = start_ranks;
+        } else {
+            m_nw_start_rank.clear();
+        }
         m_num_nw_solvers = m_nw_start_rank.size();
     }
 
