@@ -1,0 +1,19 @@
+
+exawind:
+  nalu_wind_inp:
+    - floating-block-nalu.yaml
+  amr_wind_inp: floating-block-amr.inp
+  max_time: 0.1
+  additional_picard_iterations: 2
+
+  nalu_vars:
+    - volume_of_fluid
+    - velocity
+    - density
+    - pressure
+  amr_cell_vars:
+    - vof
+    - velocity
+    - density
+  amr_node_vars:
+    - p
