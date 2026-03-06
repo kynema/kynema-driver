@@ -21,7 +21,7 @@ linear_solvers:
     preconditioner: boomerAMG
     tolerance: 1e-5
     max_iterations: 200
-    kspace: 5
+    kspace: 25
     bamg_relax_type: 18
     bamg_max_levels: 1
 
@@ -65,8 +65,8 @@ realms:
           volume_of_fluid: sloshing_tank
           pressure: sloshing_tank
         user_function_parameters:
-          volume_of_fluid: [0.1, 0.0, 0.25, 0.01]
-          pressure: [0.1, 0.0, 0.25, 0.01, 2.4]
+          volume_of_fluid: [-0.03, 0.075, 5., 0.01]
+          pressure: [-0.03, 0.075, 5., 0.01, 0.75]
 
       - constant: ic_2
         target_name: fluid-HEX
@@ -108,7 +108,9 @@ realms:
         type: point
         moments_of_inertia: [2., 0., 0., 0., 2., 0., 0., 0., 2.0]
         center_of_mass: [0.0, 0.0, 0.0]
-        mass: 10
+        initial_displacement: [0.0, 0.0, -0.075]
+        initial_rotational_velocity: [0.0, 0.01, 0.01]
+        mass: 0.75
         forcing_surfaces: [block]
         moving_mesh_blocks: [fluid-HEX]
         output_file_name: block_disp_etc.dat
@@ -152,6 +154,7 @@ realms:
        - dvolume_of_fluiddx
        - dpressuredx
        - iblank
+       - mesh_displacement
 Time_Integrators:
   - StandardTimeIntegrator:
       name: ti_1

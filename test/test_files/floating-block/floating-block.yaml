@@ -3,7 +3,7 @@ exawind:
   nalu_wind_inp:
     - floating-block-nalu.yaml
   amr_wind_inp: floating-block-amr.inp
-  max_time: 0.1
+  num_timesteps: 10
   additional_picard_iterations: 2
 
   nalu_vars:
