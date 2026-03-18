@@ -12,6 +12,7 @@ option(EXAWIND_ENABLE_TESTS "Enable testing suite" ON)
 option(EXAWIND_TEST_WITH_FCOMPARE "Check AMR-Wind test plots against gold files" OFF)
 option(EXAWIND_SAVE_GOLDS "Provide a directory in which to save golds during testing" OFF)
 option(EXAWIND_ENABLE_CUDA "Enable CUDA" OFF)
+option(EXAWIND_ENABLE_CUDA_RDC "Enable CUDA relocatable device code" OFF)
 option(EXAWIND_ENABLE_ROCM "Enable HIP" OFF)
 option(EXAWIND_ENABLE_UMPIRE "Enable Umpire GPU memory pools" OFF)
 
