@@ -6,8 +6,8 @@ target_sources(${EXAWIND_LIB_NAME} PRIVATE
   ExawindSolver.h
   ExawindSolver.cpp
   MPIUtilities.h
-  NaluWind.cpp
-  NaluWind.h
+  KynemaUGF.cpp
+  KynemaUGF.h
   OversetSimulation.cpp
   OversetSimulation.h
   ParallelPrinter.h
@@ -21,7 +21,7 @@ target_link_libraries(${EXAWIND_LIB_NAME} PUBLIC
   AMR-Wind::amrwind_api
   AMR-Wind::buildInfoamrwind_obj
   AMReX::amrex
-  Nalu-Wind::nalu)
+  Kynema-UGF::nalu)
 
 target_link_libraries(${EXAWIND_LIB_NAME} PUBLIC $<$<BOOL:${MPI_CXX_FOUND}>:MPI::MPI_CXX>)
 target_link_libraries(${EXAWIND_LIB_NAME} PUBLIC $<$<BOOL:${MPI_Fortran_FOUND}>:MPI::MPI_Fortran>)

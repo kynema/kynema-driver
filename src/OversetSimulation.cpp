@@ -121,7 +121,7 @@ void OversetSimulation::exchange_solution(bool increment_time)
         m_tg.dataUpdate_AMR();
     } else {
         const int row_major = 0;
-        // assuming this pathway is nalu-wind only and all instances have same
+        // assuming this pathway is kynema-ugf only and all instances have same
         // number of field components
         const int ncomps = m_solvers[0]->get_ncomps();
         m_tg.dataUpdate(ncomps, row_major);

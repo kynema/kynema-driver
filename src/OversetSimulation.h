@@ -19,7 +19,7 @@ private:
     MPI_Comm m_comm;
     //! List of solvers active in this overset simulation
     std::vector<std::unique_ptr<ExawindSolver>> m_solvers;
-    //! List of start ranks for all nalu-wind instances
+    //! List of start ranks for all kynema-ugf instances
     int m_num_nw_solvers;
     std::vector<int> m_nw_start_rank;
     //! Flag indicating whether an AMR solver is active
@@ -103,7 +103,7 @@ public:
     //! track memory usage and print to file
     long mem_usage_all(const int step);
 
-    //! set number of nalu-wind instances
+    //! set number of kynema-ugf instances
     void set_nw_start_rank(const std::vector<int>& start_ranks)
     {
         if (!start_ranks.empty()) {

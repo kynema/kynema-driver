@@ -76,23 +76,23 @@ void KynemaUGF::prepare_solver_prolog()
     m_sim.timeIntegrator_->prepare_for_time_integration();
 }
 
-void NaluWind::prepare_solver_epilog()
+void KynemaUGF::prepare_solver_epilog()
 {
     for (auto* realm : m_sim.timeIntegrator_->realmVec_)
         realm->output_converged_results();
 }
 
-void NaluWind::pre_advance_stage0(size_t inonlin)
+void KynemaUGF::pre_advance_stage0(size_t inonlin)
 {
     m_sim.timeIntegrator_->prepare_time_step(inonlin);
 }
 
-void NaluWind::pre_advance_stage1(size_t inonlin)
+void KynemaUGF::pre_advance_stage1(size_t inonlin)
 {
     m_sim.timeIntegrator_->pre_realm_advance_stage1(inonlin);
 }
 
-void NaluWind::pre_advance_stage2(size_t inonlin)
+void KynemaUGF::pre_advance_stage2(size_t inonlin)
 {
     m_sim.timeIntegrator_->pre_realm_advance_stage2(inonlin);
 }

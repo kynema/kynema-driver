@@ -36,11 +36,11 @@ if (EXAWIND_ENABLE_UMPIRE)
   include_directories(SYSTEM ${UMPIRE_INCLUDE_DIRS})
 endif()
 
-set(CMAKE_PREFIX_PATH ${Nalu-Wind_DIR} ${Trilinos_DIR} ${AMR-Wind_DIR}
+set(CMAKE_PREFIX_PATH ${Kynema-UGF_DIR} ${Trilinos_DIR} ${AMR-Wind_DIR}
                       ${OpenFAST_DIR} ${TIOGA_DIR}
                       ${YAML-CPP_DIR} ${CMAKE_PREFIX_PATH})
 
-find_package(Nalu-Wind REQUIRED)
+find_package(Kynema-UGF REQUIRED)
 find_package(Trilinos REQUIRED)
 find_package(AMR-Wind REQUIRED)
 if(NALU_USES_OPENFAST)

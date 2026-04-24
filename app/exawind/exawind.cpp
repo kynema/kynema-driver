@@ -1,5 +1,5 @@
 #include "AMRWind.h"
-#include "NaluWind.h"
+#include "KynemaUGF.h"
 #include "OversetSimulation.h"
 #include "MPIUtilities.h"
 #include "mpi.h"
@@ -19,7 +19,7 @@ static std::string usage(std::string name)
            "\t-h,--help\t\tShow this help message\n" +
            "\t--awind NPROCS\t\tNumber of ranks for AMR-Wind (default = all "
            "ranks)\n" +
-           "\t--nwind NPROCS\t\tNumber of ranks for Nalu-Wind (default = all "
+           "\t--nwind NPROCS\t\tNumber of ranks for Kynema-UGF (default = all "
            "ranks)\n";
 }
 
@@ -100,13 +100,13 @@ int main(int argc, char** argv)
     const std::string amr_log = replace_extension(amr_inp, ".log");
     std::ofstream out;
 
-    YAML::Node nalu_node = node["nalu_wind_inp"];
+    YAML::Node kynema_ugf_node = node["nalu_wind_inp"];
     // make sure it is a list for now
-    assert(nalu_node.IsSequence());
-    const int num_nwsolvers = nalu_node.size();
+    assert(kynema_ugf_node.IsSequence());
+    const int num_nwsolvers = kynema_ugf_node.size();
     if (num_nwind_ranks < num_nwsolvers) {
         throw std::runtime_error(
-            "Number of Nalu-Wind ranks is less than the number of Nalu-Wind "
+            "Number of Kynema-UGF ranks is less than the number of Kynema-UGF "
             "solvers. Please have at least one rank per solver.");
     }
     std::vector<int> num_nw_solver_ranks;
@@ -114,15 +114,15 @@ int main(int argc, char** argv)
         num_nw_solver_ranks = node["nalu_wind_procs"].as<std::vector<int>>();
         if (static_cast<int>(num_nw_solver_ranks.size()) != num_nwsolvers) {
             throw std::runtime_error(
-                "Number of Nalu-Wind rank specifications is less than the "
-                " number of Nalu-Wind solvers. Please have one rank count "
+                "Number of Kynema-UGF rank specifications is less than the "
+                " number of Kynema-UGF solvers. Please have one rank count "
                 "specification per solver");
         }
         const int tot_num_nw_ranks = std::accumulate(
             num_nw_solver_ranks.begin(), num_nw_solver_ranks.end(), 0);
         if (tot_num_nw_ranks != num_nwind_ranks) {
             throw std::runtime_error(
-                "Total number of Nalu-Wind ranks does not "
+                "Total number of Kynema-UGF ranks does not "
                 "match that given in the command line. Please ensure "
                 "they match");
         }
@@ -156,12 +156,12 @@ int main(int argc, char** argv)
             ? exawind::create_subcomm(MPI_COMM_WORLD, num_awind_ranks, 0)
             : MPI_COMM_NULL;
 
-    std::vector<MPI_Comm> nalu_comms;
-    std::vector<int> nalu_start_rank;
+    std::vector<MPI_Comm> kynema_ugf_comms;
+    std::vector<int> kynema_ugf_start_rank;
     int start = psize - num_nwind_ranks;
     for (const auto& nr : num_nw_solver_ranks) {
-        nalu_start_rank.push_back(start);
-        nalu_comms.push_back(
+        kynema_ugf_start_rank.push_back(start);
+        kynema_ugf_comms.push_back(
             exawind::create_subcomm(MPI_COMM_WORLD, nr, start));
         start += nr;
     }
@@ -176,14 +176,14 @@ int main(int argc, char** argv)
     }
     sim.echo(
         "Initializing " + std::to_string(num_nwsolvers) +
-        " Nalu-Wind solvers, equally partitioned on a total of " +
+        " Kynema-UGF solvers, equally partitioned on a total of " +
         std::to_string(num_nwind_ranks) + " MPI ranks");
-    if (std::any_of(nalu_comms.begin(), nalu_comms.end(), [](const auto& comm) {
+    if (std::any_of(kynema_ugf_comms.begin(), kynema_ugf_comms.end(), [](const auto& comm) {
             return comm != MPI_COMM_NULL;
         })) {
-        exawind::NaluWind::initialize();
+        exawind::KynemaUGF::initialize();
     }
-    sim.set_nw_start_rank(nalu_start_rank);
+    sim.set_nw_start_rank(kynema_ugf_start_rank);
 
     const auto nalu_vars = node["nalu_vars"].as<std::vector<std::string>>();
     const int num_timesteps =
@@ -238,18 +238,18 @@ int main(int argc, char** argv)
             YAML::Node yaml_replace_instance;
             YAML::Node this_instance = nalu_node[i];
 
-            std::string nalu_inpfile, logfile;
+            std::string kynema_ugf_inpfile, logfile;
             bool write_final_yaml_to_disk = false;
             if (this_instance.IsMap()) {
                 yaml_replace_instance = this_instance["replace"];
-                nalu_inpfile =
+                kynema_ugf_inpfile =
                     this_instance["base_input_file"].as<std::string>();
                 // deal with the logfile name
                 if (this_instance["logfile"]) {
                     logfile = this_instance["logfile"].as<std::string>();
                 } else {
-                    logfile = exawind::NaluWind::change_file_name_suffix(
-                        nalu_inpfile, ".log", i);
+                    logfile = exawind::KynemaUGF::change_file_name_suffix(
+                        kynema_ugf_inpfile, ".log", i);
                 }
                 if (this_instance["write_final_yaml_to_disk"]) {
                     write_final_yaml_to_disk =
@@ -257,34 +257,34 @@ int main(int argc, char** argv)
                 }
 
             } else {
-                nalu_inpfile = this_instance.as<std::string>();
-                logfile = exawind::NaluWind::change_file_name_suffix(
-                    nalu_inpfile, ".log");
+                kynema_ugf_inpfile = this_instance.as<std::string>();
+                logfile = exawind::KynemaUGF::change_file_name_suffix(
+                    kynema_ugf_inpfile, ".log");
             }
 
-            YAML::Node nalu_yaml = YAML::LoadFile(nalu_inpfile);
+            YAML::Node kynema_ugf_yaml = YAML::LoadFile(kynema_ugf_inpfile);
             // replace in order so instance can overwrite all
             if (yaml_replace_all) {
-                YEDIT::find_and_replace(nalu_yaml, yaml_replace_all);
+                YEDIT::find_and_replace(kynema_ugf_yaml, yaml_replace_all);
             }
             if (yaml_replace_instance) {
-                YEDIT::find_and_replace(nalu_yaml, yaml_replace_instance);
+                YEDIT::find_and_replace(kynema_ugf_yaml, yaml_replace_instance);
             }
 
             // only the first rank of the comm should write the file
             int comm_rank = -1;
-            MPI_Comm_rank(nalu_comms.at(i), &comm_rank);
+            MPI_Comm_rank(kynema_ugf_comms.at(i), &comm_rank);
             if (write_final_yaml_to_disk && comm_rank == 0) {
                 auto new_ifile_name =
-                    exawind::NaluWind::change_file_name_suffix(
+                    exawind::KynemaUGF::change_file_name_suffix(
                         logfile, ".yaml");
                 std::ofstream fout(new_ifile_name);
-                fout << nalu_yaml;
+                fout << kynema_ugf_yaml;
                 fout.close();
             }
 
-            sim.register_solver<exawind::NaluWind>(
-                i + 1, nalu_comms.at(i), nalu_yaml, logfile, nalu_vars);
+            sim.register_solver<exawind::KynemaUGF>(
+                i + 1, kynema_ugf_comms.at(i), kynema_ugf_yaml, logfile, nalu_vars);
         }
     }
 
@@ -308,10 +308,10 @@ int main(int argc, char** argv)
         exawind::AMRWind::finalize();
         out.close();
     }
-    if (std::any_of(nalu_comms.begin(), nalu_comms.end(), [](const auto& comm) {
+    if (std::any_of(kynema_ugf_comms.begin(), kynema_ugf_comms.end(), [](const auto& comm) {
             return comm != MPI_COMM_NULL;
         })) {
-        exawind::NaluWind::finalize();
+        exawind::KynemaUGF::finalize();
     }
     MPI_Finalize();
 
