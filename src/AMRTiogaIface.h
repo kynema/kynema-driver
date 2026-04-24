@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-namespace amr_wind {
+namespace kynema_sgf {
 class CFDSim;
 }
 
@@ -18,7 +18,7 @@ namespace exawind {
 class AMRTiogaIface
 {
 public:
-    AMRTiogaIface(amr_wind::CFDSim&, TIOGA::tioga& tg);
+    AMRTiogaIface(kynema_sgf::CFDSim&, TIOGA::tioga& tg);
 
     void pre_overset_conn_work();
 
@@ -33,7 +33,7 @@ public:
     void update_solution();
 
 private:
-    amr_wind::CFDSim& m_sim;
+    kynema_sgf::CFDSim& m_sim;
     TIOGA::tioga& m_tg;
 
     std::unique_ptr<TIOGA::AMRMeshInfo> m_info;

@@ -9,7 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(EXAWIND_ENABLE_TESTS "Enable testing suite" ON)
-option(EXAWIND_TEST_WITH_FCOMPARE "Check AMR-Wind test plots against gold files" OFF)
+option(EXAWIND_TEST_WITH_FCOMPARE "Check Kynema-SGF test plots against gold files" OFF)
 option(EXAWIND_SAVE_GOLDS "Provide a directory in which to save golds during testing" OFF)
 option(EXAWIND_ENABLE_CUDA "Enable CUDA" OFF)
 option(EXAWIND_ENABLE_CUDA_RDC "Enable CUDA relocatable device code" OFF)
@@ -36,13 +36,13 @@ if (EXAWIND_ENABLE_UMPIRE)
   include_directories(SYSTEM ${UMPIRE_INCLUDE_DIRS})
 endif()
 
-set(CMAKE_PREFIX_PATH ${Kynema-UGF_DIR} ${Trilinos_DIR} ${AMR-Wind_DIR}
+set(CMAKE_PREFIX_PATH ${Kynema-UGF_DIR} ${Trilinos_DIR} ${Kynema-SGF_DIR}
                       ${OpenFAST_DIR} ${TIOGA_DIR}
                       ${YAML-CPP_DIR} ${CMAKE_PREFIX_PATH})
 
 find_package(Kynema-UGF REQUIRED)
 find_package(Trilinos REQUIRED)
-find_package(AMR-Wind REQUIRED)
+find_package(Kynema-SGF REQUIRED)
 if(NALU_USES_OPENFAST)
   enable_language(Fortran)
   find_package(OpenFAST REQUIRED)

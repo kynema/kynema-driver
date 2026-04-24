@@ -20,7 +20,7 @@ void amr_to_tioga(T1& lhs, T2& rhs)
 
 } // namespace
 
-AMRTiogaIface::AMRTiogaIface(amr_wind::CFDSim& sim, TIOGA::tioga& tg)
+AMRTiogaIface::AMRTiogaIface(kynema_sgf::CFDSim& sim, TIOGA::tioga& tg)
     : m_sim(sim), m_tg(tg), m_info(new TIOGA::AMRMeshInfo)
 {}
 
@@ -41,7 +41,7 @@ void AMRTiogaIface::register_mesh()
     const int num_ghost = m_sim.pde_manager().num_ghost_state();
 
     auto* amr_tg_iface =
-        dynamic_cast<amr_wind::TiogaInterface*>(m_sim.overset_manager());
+        dynamic_cast<kynema_sgf::TiogaInterface*>(m_sim.overset_manager());
     if (amr_tg_iface == nullptr) {
         amrex::Abort("Dynamic cast to TiogaInterface failed");
         return;
@@ -78,7 +78,7 @@ void AMRTiogaIface::register_solution(
     const std::vector<std::string>& node_vars)
 {
     auto* amr_tg_iface =
-        dynamic_cast<amr_wind::TiogaInterface*>(m_sim.overset_manager());
+        dynamic_cast<kynema_sgf::TiogaInterface*>(m_sim.overset_manager());
     if (amr_tg_iface == nullptr) {
         amrex::Abort("Dynamic cast to TiogaInterface failed");
         return;

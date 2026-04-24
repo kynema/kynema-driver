@@ -20,8 +20,8 @@ private:
     //! List of solvers active in this overset simulation
     std::vector<std::unique_ptr<ExawindSolver>> m_solvers;
     //! List of start ranks for all kynema-ugf instances
-    int m_num_nw_solvers;
-    std::vector<int> m_nw_start_rank;
+    int m_num_ugf_solvers;
+    std::vector<int> m_ugf_start_rank;
     //! Flag indicating whether an AMR solver is active
     bool m_has_amr{false};
     //! Flag indicating whether an unstructured solver is active
@@ -104,14 +104,14 @@ public:
     long mem_usage_all(const int step);
 
     //! set number of kynema-ugf instances
-    void set_nw_start_rank(const std::vector<int>& start_ranks)
+    void set_ugf_start_rank(const std::vector<int>& start_ranks)
     {
         if (!start_ranks.empty()) {
-            m_nw_start_rank = start_ranks;
+            m_ugf_start_rank = start_ranks;
         } else {
-            m_nw_start_rank.clear();
+            m_ugf_start_rank.clear();
         }
-        m_num_nw_solvers = m_nw_start_rank.size();
+        m_num_ugf_solvers = m_ugf_start_rank.size();
     }
 
     void set_holemap_alg(bool alg)

@@ -1,8 +1,8 @@
 target_sources(${EXAWIND_LIB_NAME} PRIVATE
   AMRTiogaIface.cpp
   AMRTiogaIface.h
-  AMRWind.cpp
-  AMRWind.h
+  KynemaSGF.cpp
+  KynemaSGF.h
   ExawindSolver.h
   ExawindSolver.cpp
   MPIUtilities.h
@@ -18,10 +18,10 @@ target_include_directories(${EXAWIND_LIB_NAME} PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(${EXAWIND_LIB_NAME} PUBLIC
-  AMR-Wind::amrwind_api
-  AMR-Wind::buildInfoamrwind_obj
+  Kynema-SGF::kynema_sgf_api
+  Kynema-SGF::buildInfokynema_sgf_obj
   AMReX::amrex
-  Kynema-UGF::nalu)
+  Kynema-UGF::kynema_ugf)
 
 target_link_libraries(${EXAWIND_LIB_NAME} PUBLIC $<$<BOOL:${MPI_CXX_FOUND}>:MPI::MPI_CXX>)
 target_link_libraries(${EXAWIND_LIB_NAME} PUBLIC $<$<BOOL:${MPI_Fortran_FOUND}>:MPI::MPI_Fortran>)

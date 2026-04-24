@@ -3,7 +3,7 @@
 
 This repository contains a pure C++ driver API for coupling
 [Kynema-UGF](https://github.com/exawind/nalu-wind) and
-[AMR-Wind](https://github.com/exawind/amr-wind) CFD codes.
+[Kynema-SGF](https://github.com/exawind/amr-wind) CFD codes.
 
 ## Citation
 

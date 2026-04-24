@@ -1,7 +1,7 @@
 # Example input file
 
 exawind:
-  nalu_wind_inp:
+  kynema_ugf_inp:
     - nalu_platform.yaml
     - nalu_panel.yaml
   num_timesteps: 10
@@ -15,7 +15,7 @@ exawind:
       search_tolerance: 1e-12
      
   # Variables for overset exchange
-  nalu_vars:
+  ugf_vars:
     - velocity
     - pressure
     - turbulent_ke
