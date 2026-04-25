@@ -1,5 +1,5 @@
 
-exawind:
+kynema_driver:
   kynema_ugf_inp:
     - abl-ugf-box.yaml
   kynema_sgf_inp: abl-sgf-bndry-output.inp

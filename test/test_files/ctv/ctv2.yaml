@@ -1,4 +1,4 @@
-exawind:
+kynema_driver:
   kynema_ugf_inp:
     - ctv-ugf2.yaml
   kynema_sgf_inp: ctv-sgf2.inp

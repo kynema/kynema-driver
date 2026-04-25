@@ -8,7 +8,7 @@
 #include "tioga.h"
 
 // Workaround for MPI issue on OLCF Frontier machine
-#ifdef EXAWIND_ENABLE_ROCM
+#ifdef KYNEMA_ENABLE_ROCM
 #include <hip/hip_runtime.h>
 #endif
 
@@ -38,7 +38,7 @@ replace_extension(const std::string& filepath, const std::string& newExt)
 int main(int argc, char** argv)
 {
 // Workaround for MPI issue on OLCF Frontier machine
-#ifdef EXAWIND_ENABLE_ROCM
+#ifdef KYNEMA_ENABLE_ROCM
     hipInit(0);
 #endif
     MPI_Init(&argc, &argv);
@@ -89,7 +89,7 @@ int main(int argc, char** argv)
     }
 
     const YAML::Node doc(YAML::LoadFile(inpfile));
-    const YAML::Node node = doc["exawind"];
+    const YAML::Node node = doc["kynema_driver"];
     std::string sgf_inp = "dummy";
     bool use_kynema_sgf = false;
     if (node["kynema_sgf_inp"]) {

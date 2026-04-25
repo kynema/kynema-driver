@@ -1,5 +1,5 @@
 
-exawind:
+kynema_driver:
   kynema_ugf_inp:
     - zalesak-ugf.yaml
   kynema_sgf_inp: zalesak-sgf.inp

@@ -1,5 +1,5 @@
 
-exawind:
+kynema_driver:
   kynema_ugf_inp:
     - flat-surface-ugf.yaml
   kynema_sgf_inp: flat-surface-sgf.inp

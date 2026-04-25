@@ -1,6 +1,6 @@
 # Example input file
 
-exawind:
+kynema_driver:
   kynema_ugf_inp:
     - cylinder-ugf.yaml
   kynema_sgf_inp: cylinder-sgf.inp

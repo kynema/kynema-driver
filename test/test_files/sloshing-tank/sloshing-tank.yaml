@@ -1,5 +1,5 @@
 
-exawind:
+kynema_driver:
   kynema_ugf_inp:
     - sloshing-tank-ugf.yaml
   kynema_sgf_inp: sloshing-tank-sgf.inp

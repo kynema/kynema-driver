@@ -1,5 +1,5 @@
 
-exawind:
+kynema_driver:
   kynema_ugf_inp:
     - linear-waves-ugf.yaml
   kynema_sgf_inp: linear-waves-sgf.inp

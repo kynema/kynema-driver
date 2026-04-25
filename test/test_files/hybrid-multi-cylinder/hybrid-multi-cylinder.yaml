@@ -1,6 +1,6 @@
 # Example input file
 
-exawind:
+kynema_driver:
   # we can change things globally across all instances by providing a trace through 
   # the graph to the end values we want to edit
   ugf_replace_all: 

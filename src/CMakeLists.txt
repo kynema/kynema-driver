@@ -1,4 +1,4 @@
-target_sources(${EXAWIND_LIB_NAME} PRIVATE
+target_sources(${KYNEMA_LIB_NAME} PRIVATE
   SGFTiogaIface.cpp
   SGFTiogaIface.h
   KynemaSGF.cpp
@@ -14,17 +14,17 @@ target_sources(${EXAWIND_LIB_NAME} PRIVATE
   MemoryUsage.h
   MemoryUsage.cpp)
 
-target_include_directories(${EXAWIND_LIB_NAME} PUBLIC
+target_include_directories(${KYNEMA_LIB_NAME} PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(${EXAWIND_LIB_NAME} PUBLIC
+target_link_libraries(${KYNEMA_LIB_NAME} PUBLIC
   Kynema-SGF::kynema_sgf_api
   Kynema-SGF::buildInfokynema_sgf_obj
   AMReX::amrex
   Kynema-UGF::kynema_ugf)
 
-target_link_libraries(${EXAWIND_LIB_NAME} PUBLIC $<$<BOOL:${MPI_CXX_FOUND}>:MPI::MPI_CXX>)
-target_link_libraries(${EXAWIND_LIB_NAME} PUBLIC $<$<BOOL:${MPI_Fortran_FOUND}>:MPI::MPI_Fortran>)
+target_link_libraries(${KYNEMA_LIB_NAME} PUBLIC $<$<BOOL:${MPI_CXX_FOUND}>:MPI::MPI_CXX>)
+target_link_libraries(${KYNEMA_LIB_NAME} PUBLIC $<$<BOOL:${MPI_Fortran_FOUND}>:MPI::MPI_Fortran>)
 
 # Solve -fallow-argument-mismatch from fortran possibly making its way into arguments passed to clang
 #if(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|AppleClang)$")

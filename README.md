@@ -2,8 +2,8 @@
 [![journal article](https://img.shields.io/badge/DOI-10.1002/we.2886-blue)](https://doi.org/10.1002/we.2886)
 
 This repository contains a pure C++ driver API for coupling
-[Kynema-UGF](https://github.com/exawind/nalu-wind) and
-[Kynema-SGF](https://github.com/exawind/amr-wind) CFD codes.
+[Kynema-UGF](https://github.com/kynema/nalu-wind) and
+[Kynema-SGF](https://github.com/kynema/amr-wind) CFD codes.
 
 ## Citation
 

@@ -25,9 +25,9 @@ jobs:
     needs: Formatting
     runs-on: ubuntu-24.04
     container:
-      image: ecpe4s/exawind-snapshot
+      image: ecpe4s/kynema-snapshot
       env:
-          EXAWIND_MANAGER: /exawind-manager
+          KYNEMA_MANAGER: /kynema-manager
           E4S_MACHINE: true
     steps:
       - name: Clone
@@ -37,13 +37,13 @@ jobs:
       - name: Tests
         run: |
           /bin/bash -c " \
-            source ${EXAWIND_MANAGER}/start.sh && spack-start && \
+            source ${KYNEMA_MANAGER}/start.sh && spack-start && \
             spack env activate e4s-build && \
-            cd ${EXAWIND_MANAGER}/environments/e4s-build && \
-            ln -s ${GITHUB_WORKSPACE} exawind && \
-            spack develop --no-modify-concrete-specs --no-clone exawind@=master && \
+            cd ${KYNEMA_MANAGER}/environments/e4s-build && \
+            ln -s ${GITHUB_WORKSPACE} kynema && \
+            spack develop --no-modify-concrete-specs --no-clone kynema@=master && \
             spack concretize -f && \
             spack install && \
-            spack cd -b exawind && \
-            spack build-env exawind ctest -j $(nproc) -LE no-ci --output-on-failure \
+            spack cd -b kynema && \
+            spack build-env kynema ctest -j $(nproc) -LE no-ci --output-on-failure \
           "

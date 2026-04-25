@@ -1,5 +1,5 @@
 
-exawind:
+kynema_driver:
   kynema_ugf_inp:
     - floating-block-ugf.yaml
   kynema_sgf_inp: floating-block-sgf.inp
