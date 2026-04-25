@@ -105,7 +105,10 @@ bool KynemaSGF::is_fixed_timestep_size()
     return (!m_incflo.sim().time().adaptive_timestep());
 }
 
-void KynemaSGF::advance_timestep(size_t inonlin) { m_incflo.do_advance(inonlin); }
+void KynemaSGF::advance_timestep(size_t inonlin)
+{
+    m_incflo.do_advance(inonlin);
+}
 
 void KynemaSGF::post_advance() { m_incflo.post_advance_work(); }
 

@@ -14,8 +14,7 @@
 
 static std::string usage(std::string name)
 {
-    return "usage: " + name +
-           " [--sgf NPROCS] [--ugf NPROCS] input_file\n" +
+    return "usage: " + name + " [--sgf NPROCS] [--ugf NPROCS] input_file\n" +
            "\t-h,--help\t\tShow this help message\n" +
            "\t--sgf NPROCS\t\tNumber of ranks for Kynema-SGF (default = all "
            "ranks)\n" +
@@ -68,8 +67,7 @@ int main(int argc, char** argv)
                         "--sgf option requesting more ranks than available.");
                 }
             } else {
-                throw std::runtime_error(
-                    "--sgf option requires one argument.");
+                throw std::runtime_error("--sgf option requires one argument.");
             }
         } else if (arg == "--ugf") {
             if (i + 1 < argc) {
@@ -80,8 +78,7 @@ int main(int argc, char** argv)
                         "--ugf option requesting more ranks than available.");
                 }
             } else {
-                throw std::runtime_error(
-                    "--ugf option requires one argument.");
+                throw std::runtime_error("--ugf option requires one argument.");
             }
         } else {
             inpfile = argv[i];
@@ -178,9 +175,9 @@ int main(int argc, char** argv)
         "Initializing " + std::to_string(num_ugf_solvers) +
         " Kynema-UGF solvers, equally partitioned on a total of " +
         std::to_string(num_ugf_ranks) + " MPI ranks");
-    if (std::any_of(kynema_ugf_comms.begin(), kynema_ugf_comms.end(), [](const auto& comm) {
-            return comm != MPI_COMM_NULL;
-        })) {
+    if (std::any_of(
+            kynema_ugf_comms.begin(), kynema_ugf_comms.end(),
+            [](const auto& comm) { return comm != MPI_COMM_NULL; })) {
         driver::KynemaUGF::initialize();
     }
     sim.set_ugf_start_rank(kynema_ugf_start_rank);
@@ -284,7 +281,8 @@ int main(int argc, char** argv)
             }
 
             sim.register_solver<driver::KynemaUGF>(
-                i + 1, kynema_ugf_comms.at(i), kynema_ugf_yaml, logfile, ugf_vars);
+                i + 1, kynema_ugf_comms.at(i), kynema_ugf_yaml, logfile,
+                ugf_vars);
         }
     }
 
@@ -308,9 +306,9 @@ int main(int argc, char** argv)
         driver::KynemaSGF::finalize();
         out.close();
     }
-    if (std::any_of(kynema_ugf_comms.begin(), kynema_ugf_comms.end(), [](const auto& comm) {
-            return comm != MPI_COMM_NULL;
-        })) {
+    if (std::any_of(
+            kynema_ugf_comms.begin(), kynema_ugf_comms.end(),
+            [](const auto& comm) { return comm != MPI_COMM_NULL; })) {
         driver::KynemaUGF::finalize();
     }
     MPI_Finalize();

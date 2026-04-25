@@ -97,10 +97,7 @@ void KynemaUGF::pre_advance_stage2(size_t inonlin)
     m_sim.timeIntegrator_->pre_realm_advance_stage2(inonlin);
 }
 
-double KynemaUGF::get_time()
-{
-    return m_sim.timeIntegrator_->get_time();
-}
+double KynemaUGF::get_time() { return m_sim.timeIntegrator_->get_time(); }
 
 double KynemaUGF::get_timestep_size()
 {
