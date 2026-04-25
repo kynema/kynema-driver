@@ -10,7 +10,7 @@ namespace TIOGA {
 class tioga;
 }
 
-namespace exawind {
+namespace driver {
 
 class OversetSimulation
 {
@@ -145,5 +145,5 @@ public:
     }
 };
 
-} // namespace exawind
+} // namespace driver
 #endif /* OVERSETSIMULATION_H */

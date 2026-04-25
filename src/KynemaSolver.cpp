@@ -1,7 +1,7 @@
 #include "KynemaSolver.h"
 #include "MemoryUsage.h"
 
-namespace exawind {
+namespace driver {
 KynemaSolver::~KynemaSolver() = default;
 
-} // namespace exawind
+} // namespace driver

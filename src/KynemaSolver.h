@@ -4,7 +4,7 @@
 #include "Timers.h"
 #include "ParallelPrinter.h"
 
-namespace exawind {
+namespace driver {
 
 class KynemaSolver
 {
@@ -155,5 +155,5 @@ protected:
     virtual void dump_simulation_time() = 0;
 };
 
-} // namespace exawind
+} // namespace driver
 #endif /* KYNEMASOLVER_H */

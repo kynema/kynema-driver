@@ -8,7 +8,7 @@
 
 #include "tioga.h"
 
-namespace exawind {
+namespace driver {
 
 void KynemaSGF::initialize(
     MPI_Comm comm, const std::string& inpfile, std::ofstream& out)
@@ -128,4 +128,4 @@ int KynemaSGF::overset_update_interval()
 
 int KynemaSGF::time_index() { return m_incflo.sim().time().time_index(); }
 
-} // namespace exawind
+} // namespace driver

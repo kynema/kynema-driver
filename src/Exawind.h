@@ -1,6 +1,6 @@
 #ifndef EXAWIND_H
 #define EXAWIND_H
 
-namespace exawind {}
+namespace driver {}
 
 #endif /* EXAWIND_H */

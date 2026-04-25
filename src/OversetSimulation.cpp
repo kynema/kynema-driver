@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <fstream>
 
-namespace exawind {
+namespace driver {
 
 OversetSimulation::OversetSimulation(MPI_Comm comm)
     : m_comm(comm)
@@ -303,4 +303,4 @@ long OversetSimulation::mem_usage_all(const int step)
     return mem;
 }
 
-} // namespace exawind
+} // namespace driver

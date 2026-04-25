@@ -11,7 +11,7 @@
 #include <sstream>
 #include <string>
 
-namespace exawind {
+namespace driver {
 
 class Timer
 {
@@ -212,5 +212,5 @@ struct Timers
         return outstream;
     }
 };
-} // namespace exawind
+} // namespace driver
 #endif /* TIMERS_H */

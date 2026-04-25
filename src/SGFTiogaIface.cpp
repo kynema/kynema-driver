@@ -6,7 +6,7 @@
 #include "TiogaMeshInfo.h"
 #include "tioga.h"
 
-namespace exawind {
+namespace driver {
 
 namespace {
 
@@ -37,7 +37,7 @@ void SGFTiogaIface::post_overset_conn_work()
 
 void SGFTiogaIface::register_mesh()
 {
-    BL_PROFILE("exawind::SGFTiogaIface::register_mesh");
+    BL_PROFILE("driver::SGFTiogaIface::register_mesh");
     const int num_ghost = m_sim.pde_manager().num_ghost_state();
 
     auto* amr_tg_iface =
@@ -104,4 +104,4 @@ void SGFTiogaIface::update_solution()
     m_sim.overset_manager()->update_solution();
 }
 
-} // namespace exawind
+} // namespace driver

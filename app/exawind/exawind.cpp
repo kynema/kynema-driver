@@ -153,7 +153,7 @@ int main(int argc, char** argv)
 
     MPI_Comm sgf_comm =
         use_kynema_sgf
-            ? exawind::create_subcomm(MPI_COMM_WORLD, num_sgf_ranks, 0)
+            ? driver::create_subcomm(MPI_COMM_WORLD, num_sgf_ranks, 0)
             : MPI_COMM_NULL;
 
     std::vector<MPI_Comm> kynema_ugf_comms;
@@ -162,17 +162,17 @@ int main(int argc, char** argv)
     for (const auto& nr : num_ugf_solver_ranks) {
         kynema_ugf_start_rank.push_back(start);
         kynema_ugf_comms.push_back(
-            exawind::create_subcomm(MPI_COMM_WORLD, nr, start));
+            driver::create_subcomm(MPI_COMM_WORLD, nr, start));
         start += nr;
     }
 
-    exawind::OversetSimulation sim(MPI_COMM_WORLD);
+    driver::OversetSimulation sim(MPI_COMM_WORLD);
     if (sgf_comm != MPI_COMM_NULL) {
         sim.echo(
             "Initializing Kynema-SGF on " + std::to_string(num_sgf_ranks) +
             " MPI ranks");
         out.open(sgf_log);
-        exawind::KynemaSGF::initialize(sgf_comm, sgf_inp, out);
+        driver::KynemaSGF::initialize(sgf_comm, sgf_inp, out);
     }
     sim.echo(
         "Initializing " + std::to_string(num_ugf_solvers) +
@@ -181,7 +181,7 @@ int main(int argc, char** argv)
     if (std::any_of(kynema_ugf_comms.begin(), kynema_ugf_comms.end(), [](const auto& comm) {
             return comm != MPI_COMM_NULL;
         })) {
-        exawind::KynemaUGF::initialize();
+        driver::KynemaUGF::initialize();
     }
     sim.set_ugf_start_rank(kynema_ugf_start_rank);
 
@@ -248,7 +248,7 @@ int main(int argc, char** argv)
                 if (this_instance["logfile"]) {
                     logfile = this_instance["logfile"].as<std::string>();
                 } else {
-                    logfile = exawind::KynemaUGF::change_file_name_suffix(
+                    logfile = driver::KynemaUGF::change_file_name_suffix(
                         kynema_ugf_inpfile, ".log", i);
                 }
                 if (this_instance["write_final_yaml_to_disk"]) {
@@ -258,7 +258,7 @@ int main(int argc, char** argv)
 
             } else {
                 kynema_ugf_inpfile = this_instance.as<std::string>();
-                logfile = exawind::KynemaUGF::change_file_name_suffix(
+                logfile = driver::KynemaUGF::change_file_name_suffix(
                     kynema_ugf_inpfile, ".log");
             }
 
@@ -276,14 +276,14 @@ int main(int argc, char** argv)
             MPI_Comm_rank(kynema_ugf_comms.at(i), &comm_rank);
             if (write_final_yaml_to_disk && comm_rank == 0) {
                 auto new_ifile_name =
-                    exawind::KynemaUGF::change_file_name_suffix(
+                    driver::KynemaUGF::change_file_name_suffix(
                         logfile, ".yaml");
                 std::ofstream fout(new_ifile_name);
                 fout << kynema_ugf_yaml;
                 fout.close();
             }
 
-            sim.register_solver<exawind::KynemaUGF>(
+            sim.register_solver<driver::KynemaUGF>(
                 i + 1, kynema_ugf_comms.at(i), kynema_ugf_yaml, logfile, ugf_vars);
         }
     }
@@ -294,7 +294,7 @@ int main(int argc, char** argv)
         const auto sgf_nvars =
             node["sgf_node_vars"].as<std::vector<std::string>>();
 
-        sim.register_solver<exawind::KynemaSGF>(sgf_cvars, sgf_nvars);
+        sim.register_solver<driver::KynemaSGF>(sgf_cvars, sgf_nvars);
     }
 
     sim.echo("Initializing overset simulation");
@@ -305,13 +305,13 @@ int main(int argc, char** argv)
     sim.delete_solvers();
 
     if (sgf_comm != MPI_COMM_NULL) {
-        exawind::KynemaSGF::finalize();
+        driver::KynemaSGF::finalize();
         out.close();
     }
     if (std::any_of(kynema_ugf_comms.begin(), kynema_ugf_comms.end(), [](const auto& comm) {
             return comm != MPI_COMM_NULL;
         })) {
-        exawind::KynemaUGF::finalize();
+        driver::KynemaUGF::finalize();
     }
     MPI_Finalize();
 

@@ -9,7 +9,7 @@
 #include "tioga.h"
 #include "HypreNGP.h"
 
-namespace exawind {
+namespace driver {
 
 void KynemaUGF::initialize()
 {
@@ -172,4 +172,4 @@ void KynemaUGF::dump_simulation_time()
     }
 }
 
-} // namespace exawind
+} // namespace driver

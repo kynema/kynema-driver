@@ -6,7 +6,7 @@ namespace TIOGA {
 class tioga;
 }
 
-namespace exawind {
+namespace driver {
 
 class KynemaSGF : public ExawindSolver
 {
@@ -55,4 +55,4 @@ protected:
     MPI_Comm m_comm;
 };
 
-} // namespace exawind
+} // namespace driver
