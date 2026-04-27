@@ -56,10 +56,11 @@ void KynemaUGF::init_prolog(bool multi_solver_mode)
     // before the kynema_ugf banner
     auto& env = sierra::kynema_ugf::KynemaUGFEnv::self();
     env.kynema_ugfOutputP0() << std::string(20, '#') << " INPUT FILE START "
-                       << std::string(20, '#') << std::endl;
-    sierra::kynema_ugf::KynemaUGFParsingHelper::emit(*env.kynema_ugfLogStream_, m_doc);
+                             << std::string(20, '#') << std::endl;
+    sierra::kynema_ugf::KynemaUGFParsingHelper::emit(
+        *env.kynema_ugfLogStream_, m_doc);
     env.kynema_ugfOutputP0() << std::string(20, '#') << " INPUT FILE END   "
-                       << std::string(20, '#') << std::endl;
+                             << std::string(20, '#') << std::endl;
 
     m_sim.load(m_doc);
     if (m_sim.timeIntegrator_->overset_ != nullptr)
@@ -97,7 +98,10 @@ void KynemaUGF::pre_advance_stage2(size_t inonlin)
     m_sim.timeIntegrator_->pre_realm_advance_stage2(inonlin);
 }
 
-double KynemaUGF::get_time() { return m_sim.timeIntegrator_->get_current_time(); }
+double KynemaUGF::get_time()
+{
+    return m_sim.timeIntegrator_->get_current_time();
+}
 
 double KynemaUGF::get_timestep_size()
 {
