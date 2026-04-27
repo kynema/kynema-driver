@@ -2,7 +2,7 @@
 #define OVERSETSIMULATION_H
 #include "mpi.h"
 #include "tioga.h"
-#include "ExawindSolver.h"
+#include "KynemaSolver.h"
 #include "ParallelPrinter.h"
 #include "Timers.h"
 
@@ -18,7 +18,7 @@ private:
     //! World communicator instance
     MPI_Comm m_comm;
     //! List of solvers active in this overset simulation
-    std::vector<std::unique_ptr<ExawindSolver>> m_solvers;
+    std::vector<std::unique_ptr<KynemaSolver>> m_solvers;
     //! List of start ranks for all kynema-ugf instances
     int m_num_ugf_solvers;
     std::vector<int> m_ugf_start_rank;

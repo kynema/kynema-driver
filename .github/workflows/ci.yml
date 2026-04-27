@@ -1,4 +1,4 @@
-name: Exawind-CI
+name: KynemaDriver-CI
 
 on:
   push:

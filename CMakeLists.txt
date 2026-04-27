@@ -52,7 +52,7 @@ find_package(YAML-CPP 0.6.2 REQUIRED)
 find_package(MPI REQUIRED)
 
 # General information about machine, compiler, and build type
-message(STATUS "Exawind information:")
+message(STATUS "Kynema information:")
 message(STATUS "CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
 message(STATUS "CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "CMAKE_CXX_COMPILER_VERSION = ${CMAKE_CXX_COMPILER_VERSION}")

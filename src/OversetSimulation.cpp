@@ -230,11 +230,11 @@ void OversetSimulation::print_timing(const int nt)
 {
     // overall timestep timing
     auto timing_summary = m_timers_exa.get_timings_summary(
-        "Exawind", nt, m_comm, m_printer.io_rank());
+        "Kynema", nt, m_comm, m_printer.io_rank());
     m_printer.echo(timing_summary);
 
     auto timing_detail = m_timers_exa.get_timings_detail(
-        "Exawind", nt, m_comm, m_printer.io_rank());
+        "Kynema", nt, m_comm, m_printer.io_rank());
     m_printer.timing_to_file(timing_detail);
 
     MPI_Barrier(m_comm);
@@ -281,7 +281,7 @@ long OversetSimulation::mem_usage_all(const int step)
         &mem, 1, MPI_LONG, memall.data(), 1, MPI_LONG, m_printer.io_rank(),
         m_comm);
 
-    // FIXME: move to separate output files and put in ExawindSolver
+    // FIXME: move to separate output files and put in KynemaSolver
     if (m_printer.is_io_rank()) {
         const std::string filename = "memusage.dat";
         std::ofstream fp;

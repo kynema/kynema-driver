@@ -1,6 +1,6 @@
 #include "src/incflo.H"
 #include "AMRTiogaIface.h"
-#include "ExawindSolver.h"
+#include "KynemaSolver.h"
 
 namespace TIOGA {
 class tioga;
@@ -8,7 +8,7 @@ class tioga;
 
 namespace driver {
 
-class KynemaSGF : public ExawindSolver
+class KynemaSGF : public KynemaSolver
 {
 private:
     incflo m_incflo;

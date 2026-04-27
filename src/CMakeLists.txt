@@ -3,8 +3,8 @@ target_sources(${KYNEMA_LIB_NAME} PRIVATE
   SGFTiogaIface.h
   KynemaSGF.cpp
   KynemaSGF.h
-  ExawindSolver.h
-  ExawindSolver.cpp
+  KynemaSolver.h
+  KynemaSolver.cpp
   MPIUtilities.h
   KynemaUGF.cpp
   KynemaUGF.h
