@@ -111,6 +111,6 @@ add_test_r(ugf-ugf-cylinder)
 add_test_r(ugf-ugf-cylinder-motion)
 add_test_re(stokes-waves-cylinder)
 
-if(UGF_USES_FMB)
+if(KYNEMA_UGF_USES_KYNEMA_FMB)
   add_test_r(floating-block)
 endif()
