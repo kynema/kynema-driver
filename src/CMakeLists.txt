@@ -1,4 +1,4 @@
-target_sources(${KYNEMA_DRIVER_DRIVER_LIB_NAME} PRIVATE
+target_sources(${KYNEMA_DRIVER_LIB_NAME} PRIVATE
   SGFTiogaIface.cpp
   SGFTiogaIface.h
   KynemaSGF.cpp
@@ -21,7 +21,7 @@ target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC
   Kynema-SGF::kynema_sgf_api
   Kynema-SGF::buildInfokynema_sgf_obj
   AMReX::amrex
-  Kynema-UGF::kynema-ugf-lib)
+  Kynema-UGF::kynema_ugf_lib)
 
 target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC $<$<BOOL:${MPI_CXX_FOUND}>:MPI::MPI_CXX>)
 target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC $<$<BOOL:${MPI_Fortran_FOUND}>:MPI::MPI_Fortran>)

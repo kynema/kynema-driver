@@ -43,7 +43,7 @@ set(CMAKE_PREFIX_PATH ${Kynema-UGF_DIR} ${Trilinos_DIR} ${Kynema-SGF_DIR}
 find_package(Kynema-UGF REQUIRED)
 find_package(Trilinos REQUIRED)
 find_package(Kynema-SGF REQUIRED)
-if(UGF_USES_OPENFAST)
+if(KYNEMA_UGF_USES_OPENFAST)
   enable_language(Fortran)
   find_package(OpenFAST REQUIRED)
 endif()
