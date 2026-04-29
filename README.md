@@ -27,5 +27,5 @@ To cite ExaWind or the usage of this driver and to learn more about the methodol
 
 To pass the format check use this with a new version of `clang-format`:
 ```
-find ./app ./src \( -name "*.cpp" -o -name "*.H" -o -name "*.h" -o -name "*.C" \) -exec clang-format -i {} +
+find kynema_driver.cpp ./src \( -name "*.cpp" -o -name "*.H" -o -name "*.h" -o -name "*.C" \) -exec clang-format -i {} +
 ```
