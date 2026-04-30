@@ -1,10 +1,10 @@
-#ifndef AMRTIOGAIFACE_H
-#define AMRTIOGAIFACE_H
+#ifndef SGFTIOGAIFACE_H
+#define SGFTIOGAIFACE_H
 
 #include <memory>
 #include <vector>
 
-namespace amr_wind {
+namespace kynema_sgf {
 class CFDSim;
 }
 
@@ -13,12 +13,12 @@ class tioga;
 struct AMRMeshInfo;
 } // namespace TIOGA
 
-namespace exawind {
+namespace driver {
 
-class AMRTiogaIface
+class SGFTiogaIface
 {
 public:
-    AMRTiogaIface(amr_wind::CFDSim&, TIOGA::tioga& tg);
+    SGFTiogaIface(kynema_sgf::CFDSim&, TIOGA::tioga& tg);
 
     void pre_overset_conn_work();
 
@@ -33,12 +33,12 @@ public:
     void update_solution();
 
 private:
-    amr_wind::CFDSim& m_sim;
+    kynema_sgf::CFDSim& m_sim;
     TIOGA::tioga& m_tg;
 
     std::unique_ptr<TIOGA::AMRMeshInfo> m_info;
 };
 
-} // namespace exawind
+} // namespace driver
 
-#endif /* AMRTIOGAIFACE_H */
+#endif /* SGFTIOGAIFACE_H */

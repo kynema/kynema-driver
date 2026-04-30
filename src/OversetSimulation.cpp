@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <fstream>
 
-namespace exawind {
+namespace driver {
 
 OversetSimulation::OversetSimulation(MPI_Comm comm)
     : m_comm(comm)
@@ -121,7 +121,7 @@ void OversetSimulation::exchange_solution(bool increment_time)
         m_tg.dataUpdate_AMR();
     } else {
         const int row_major = 0;
-        // assuming this pathway is nalu-wind only and all instances have same
+        // assuming this pathway is kynema-ugf only and all instances have same
         // number of field components
         const int ncomps = m_solvers[0]->get_ncomps();
         m_tg.dataUpdate(ncomps, row_major);
@@ -230,11 +230,11 @@ void OversetSimulation::print_timing(const int nt)
 {
     // overall timestep timing
     auto timing_summary = m_timers_exa.get_timings_summary(
-        "Exawind", nt, m_comm, m_printer.io_rank());
+        "Kynema", nt, m_comm, m_printer.io_rank());
     m_printer.echo(timing_summary);
 
     auto timing_detail = m_timers_exa.get_timings_detail(
-        "Exawind", nt, m_comm, m_printer.io_rank());
+        "Kynema", nt, m_comm, m_printer.io_rank());
     m_printer.timing_to_file(timing_detail);
 
     MPI_Barrier(m_comm);
@@ -281,7 +281,7 @@ long OversetSimulation::mem_usage_all(const int step)
         &mem, 1, MPI_LONG, memall.data(), 1, MPI_LONG, m_printer.io_rank(),
         m_comm);
 
-    // FIXME: move to separate output files and put in ExawindSolver
+    // FIXME: move to separate output files and put in KynemaSolver
     if (m_printer.is_io_rank()) {
         const std::string filename = "memusage.dat";
         std::ofstream fp;
@@ -303,4 +303,4 @@ long OversetSimulation::mem_usage_all(const int step)
     return mem;
 }
 
-} // namespace exawind
+} // namespace driver

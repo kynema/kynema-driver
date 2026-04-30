@@ -1,18 +1,18 @@
-#include "amr-wind/incflo.H"
-#include "AMRTiogaIface.h"
-#include "ExawindSolver.h"
+#include "src/incflo.H"
+#include "SGFTiogaIface.h"
+#include "KynemaSolver.h"
 
 namespace TIOGA {
 class tioga;
 }
 
-namespace exawind {
+namespace driver {
 
-class AMRWind : public ExawindSolver
+class KynemaSGF : public KynemaSolver
 {
 private:
     incflo m_incflo;
-    AMRTiogaIface m_tgiface;
+    SGFTiogaIface m_tgiface;
     std::vector<std::string> m_cell_vars;
     std::vector<std::string> m_node_vars;
 
@@ -20,17 +20,17 @@ public:
     static void
     initialize(MPI_Comm comm, const std::string& inpfile, std::ofstream& out);
     static void finalize();
-    explicit AMRWind(
+    explicit KynemaSGF(
         const std::vector<std::string>&,
         const std::vector<std::string>&,
         TIOGA::tioga&);
-    ~AMRWind();
+    ~KynemaSGF();
     bool is_unstructured() override { return false; }
     bool is_amr() override { return true; }
     bool is_fixed_timestep_size() override;
     int overset_update_interval() override;
     int time_index() override;
-    std::string identifier() override { return "AMR-Wind"; }
+    std::string identifier() override { return "Kynema-SGF"; }
     MPI_Comm comm() override { return m_comm; }
 
 protected:
@@ -55,4 +55,4 @@ protected:
     MPI_Comm m_comm;
 };
 
-} // namespace exawind
+} // namespace driver

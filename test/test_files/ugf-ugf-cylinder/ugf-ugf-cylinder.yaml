@@ -1,13 +1,13 @@
 # Example input file
 
-exawind:
-  nalu_wind_inp:
-    - cylinder-nalu-far.yaml
-    - cylinder-nalu-near.yaml
+kynema_driver:
+  kynema_ugf_inp:
+    - cylinder-ugf-far.yaml
+    - cylinder-ugf-near.yaml
   num_timesteps: 10
   additional_picard_iterations: 2
 
   # Variables for overset exchange
-  nalu_vars:
+  ugf_vars:
     - velocity
     - pressure

@@ -101,7 +101,7 @@ realms:
             wall_parts: [block]
             ovset_parts: [ovst_bdy]
 
-    kynema_six_dof:
+    kynema_fmb_six_dof:
       gravity: [0.0, 0.0, -9.81]
       number_of_bodies: 1
       Body0:

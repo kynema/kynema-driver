@@ -1,13 +1,13 @@
 
-exawind:
-  nalu_wind_inp:
-    - zalesak-nalu.yaml
-  amr_wind_inp: zalesak-amr.inp
+kynema_driver:
+  kynema_ugf_inp:
+    - zalesak-ugf.yaml
+  kynema_sgf_inp: zalesak-sgf.inp
   num_timesteps: 10
   additional_picard_iterations: 2
 
-  nalu_vars:
+  ugf_vars:
     - volume_of_fluid
-  amr_cell_vars:
+  sgf_cell_vars:
     - vof
-  amr_node_vars: []
+  sgf_node_vars: []

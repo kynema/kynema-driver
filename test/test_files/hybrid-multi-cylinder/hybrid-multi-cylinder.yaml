@@ -1,9 +1,9 @@
 # Example input file
 
-exawind:
+kynema_driver:
   # we can change things globally across all instances by providing a trace through 
   # the graph to the end values we want to edit
-  nalu_replace_all: 
+  ugf_replace_all: 
     realms:
     - name: replaced
       boundary_conditions:
@@ -13,15 +13,15 @@ exawind:
       - overset_boundary_condition: changed_overset_name
     Time_Integrators: [ StandardTimeIntegrator: { realms: [replaced]}]
 
-  nalu_wind_inp:
+  kynema_ugf_inp:
     ################
     # front cylinder
     ################
-    - base_input_file: cylinder-nalu.yaml
+    - base_input_file: cylinder-ugf.yaml
       logfile: stationary_front_cylinder.log
-      # set this value if you want to write the final nalu instances to disk 
+      # set this value if you want to write the final kynema_ugf instances to disk 
       write_final_yaml_to_disk: true
-      # same syntax as nalu_replace_all but for this specific instance
+      # same syntax as ugf_replace_all but for this specific instance
       replace: 
         realms:
         - mesh_motion:
@@ -33,7 +33,7 @@ exawind:
     ################
     # back cylinder
     ################
-    - base_input_file: cylinder-nalu.yaml
+    - base_input_file: cylinder-ugf.yaml
       logfile: moving_back_cylinder.log
       write_final_yaml_to_disk: true
       replace: 
@@ -41,15 +41,15 @@ exawind:
         - post_processing: [{output_file_name: back_forces.dat}]
           output: {output_data_base_name: out/back-cylinder.e}
 
-  amr_wind_inp: cylinder-amr.inp
+  kynema_sgf_inp: cylinder-sgf.inp
   num_timesteps: 10
   additional_picard_iterations: 2
 
   # Variables for overset exchange
-  nalu_vars:
+  ugf_vars:
     - velocity
     - pressure
-  amr_cell_vars:
+  sgf_cell_vars:
     - velocity
-  amr_node_vars:
+  sgf_node_vars:
     - p

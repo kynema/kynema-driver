@@ -1,6 +1,6 @@
 #include "MemoryUsage.h"
 
-namespace exawind {
+namespace driver {
 
 #ifdef __linux__
 long memory_usage()
@@ -15,4 +15,4 @@ long memory_usage()
 long memory_usage() { return -1; }
 #endif
 
-} // namespace exawind
+} // namespace driver

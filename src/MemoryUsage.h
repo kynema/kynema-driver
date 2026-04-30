@@ -5,10 +5,10 @@
 #include <sys/resource.h>
 #endif
 
-namespace exawind {
+namespace driver {
 
 //! Get memory usage in MB
 long memory_usage();
 
-} // namespace exawind
+} // namespace driver
 #endif /* MEMORYUSAGE_H */

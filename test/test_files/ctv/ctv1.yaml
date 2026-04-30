@@ -1,17 +1,17 @@
-exawind:
-  nalu_wind_inp:
-    - ctv-nalu1.yaml
-  amr_wind_inp: ctv-amr1.inp
+kynema_driver:
+  kynema_ugf_inp:
+    - ctv-ugf1.yaml
+  kynema_sgf_inp: ctv-sgf1.inp
   num_timesteps: 10
   additional_picard_iterations: 4
 
   # Variables for overset exchange
-  nalu_vars:
+  ugf_vars:
     - velocity
     - pressure
 
-  amr_cell_vars:
+  sgf_cell_vars:
     - velocity
 
-  amr_node_vars:
+  sgf_node_vars:
     - p

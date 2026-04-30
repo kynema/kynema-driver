@@ -1,16 +1,16 @@
-#ifndef EXAWINDSOLVER_H
-#define EXAWINDSOLVER_H
+#ifndef KYNEMASOLVER_H
+#define KYNEMASOLVER_H
 
 #include "Timers.h"
 #include "ParallelPrinter.h"
 
-namespace exawind {
+namespace driver {
 
-class ExawindSolver
+class KynemaSolver
 {
 public:
-    explicit ExawindSolver() : m_timers(m_names) {};
-    virtual ~ExawindSolver();
+    explicit KynemaSolver() : m_timers(m_names) {};
+    virtual ~KynemaSolver();
 
     void call_init_prolog(bool multi_solver_mode = true)
     {
@@ -124,7 +124,7 @@ public:
     virtual bool is_fixed_timestep_size() = 0;
     virtual int overset_update_interval() { return 100000000; };
     virtual int time_index() = 0;
-    virtual std::string identifier() { return "ExawindSolver"; }
+    virtual std::string identifier() { return "KynemaSolver"; }
     virtual MPI_Comm comm() = 0;
     virtual int get_ncomps() { return 0; };
     void timing_details();
@@ -155,5 +155,5 @@ protected:
     virtual void dump_simulation_time() = 0;
 };
 
-} // namespace exawind
-#endif /* EXAWINDSOLVER_H */
+} // namespace driver
+#endif /* KYNEMASOLVER_H */

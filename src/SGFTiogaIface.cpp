@@ -1,12 +1,12 @@
 #include <vector>
 
-#include "AMRTiogaIface.h"
-#include "amr-wind/CFDSim.H"
-#include "amr-wind/overset/TiogaInterface.H"
+#include "SGFTiogaIface.h"
+#include "src/CFDSim.H"
+#include "src/overset/TiogaInterface.H"
 #include "TiogaMeshInfo.h"
 #include "tioga.h"
 
-namespace exawind {
+namespace driver {
 
 namespace {
 
@@ -20,28 +20,28 @@ void amr_to_tioga(T1& lhs, T2& rhs)
 
 } // namespace
 
-AMRTiogaIface::AMRTiogaIface(amr_wind::CFDSim& sim, TIOGA::tioga& tg)
+SGFTiogaIface::SGFTiogaIface(kynema_sgf::CFDSim& sim, TIOGA::tioga& tg)
     : m_sim(sim), m_tg(tg), m_info(new TIOGA::AMRMeshInfo)
 {}
 
-void AMRTiogaIface::pre_overset_conn_work()
+void SGFTiogaIface::pre_overset_conn_work()
 {
     m_sim.overset_manager()->pre_overset_conn_work();
     register_mesh();
 }
 
-void AMRTiogaIface::post_overset_conn_work()
+void SGFTiogaIface::post_overset_conn_work()
 {
     m_sim.overset_manager()->post_overset_conn_work();
 }
 
-void AMRTiogaIface::register_mesh()
+void SGFTiogaIface::register_mesh()
 {
-    BL_PROFILE("exawind::AMRTiogaIface::register_mesh");
+    BL_PROFILE("driver::SGFTiogaIface::register_mesh");
     const int num_ghost = m_sim.pde_manager().num_ghost_state();
 
     auto* amr_tg_iface =
-        dynamic_cast<amr_wind::TiogaInterface*>(m_sim.overset_manager());
+        dynamic_cast<kynema_sgf::TiogaInterface*>(m_sim.overset_manager());
     if (amr_tg_iface == nullptr) {
         amrex::Abort("Dynamic cast to TiogaInterface failed");
         return;
@@ -73,12 +73,12 @@ void AMRTiogaIface::register_mesh()
     m_tg.register_amr_grid(m_info.get());
 }
 
-void AMRTiogaIface::register_solution(
+void SGFTiogaIface::register_solution(
     const std::vector<std::string>& cell_vars,
     const std::vector<std::string>& node_vars)
 {
     auto* amr_tg_iface =
-        dynamic_cast<amr_wind::TiogaInterface*>(m_sim.overset_manager());
+        dynamic_cast<kynema_sgf::TiogaInterface*>(m_sim.overset_manager());
     if (amr_tg_iface == nullptr) {
         amrex::Abort("Dynamic cast to TiogaInterface failed");
         return;
@@ -99,9 +99,9 @@ void AMRTiogaIface::register_solution(
     m_tg.register_amr_solution();
 }
 
-void AMRTiogaIface::update_solution()
+void SGFTiogaIface::update_solution()
 {
     m_sim.overset_manager()->update_solution();
 }
 
-} // namespace exawind
+} // namespace driver

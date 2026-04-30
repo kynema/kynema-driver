@@ -150,7 +150,7 @@ realms:
     post_processing:
       - type: surface
         physics: surface_force_and_moment
-        output_file_name: nalu_forces.dat
+        output_file_name: ugf_forces.dat
         frequency: 1
         parameters: [0, 0]
         target_name:

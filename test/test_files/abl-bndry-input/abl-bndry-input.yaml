@@ -1,15 +1,15 @@
 
-exawind:
-  nalu_wind_inp:
-    - abl-nalu-box-rst.yaml
-  amr_wind_inp: abl-amr-bndry-input.inp
+kynema_driver:
+  kynema_ugf_inp:
+    - abl-ugf-box-rst.yaml
+  kynema_sgf_inp: abl-sgf-bndry-input.inp
   num_timesteps: 5
   additional_picard_iterations: 2
 
-  nalu_vars:
+  ugf_vars:
     - velocity
     - pressure
-  amr_cell_vars:
+  sgf_cell_vars:
     - velocity
-  amr_node_vars:
+  sgf_node_vars:
     - p

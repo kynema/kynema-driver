@@ -1,22 +1,22 @@
-#include "AMRWind.h"
-#include "amr-wind/incflo.H"
-#include "amr-wind/CFDSim.H"
-#include "amr-wind/core/SimTime.H"
-#include "amr-wind/utilities/console_io.H"
+#include "KynemaSGF.h"
+#include "src/incflo.H"
+#include "src/CFDSim.H"
+#include "src/core/SimTime.H"
+#include "src/utilities/console_io.H"
 #include "AMReX.H"
 #include "AMReX_ParmParse.H"
 
 #include "tioga.h"
 
-namespace exawind {
+namespace driver {
 
-void AMRWind::initialize(
+void KynemaSGF::initialize(
     MPI_Comm comm, const std::string& inpfile, std::ofstream& out)
 {
     int argc = 2;
     char** argv = new char*[argc];
 
-    const char* exename = "amr_wind";
+    const char* exename = "kynema_sgf";
     argv[0] = const_cast<char*>(exename);
     argv[1] = const_cast<char*>(inpfile.c_str());
 
@@ -33,14 +33,14 @@ void AMRWind::initialize(
         },
         out, out);
 
-    amr_wind::io::print_banner(comm, amrex::OutStream());
+    kynema_sgf::io::print_banner(comm, amrex::OutStream());
 
     delete[] argv;
 }
 
-void AMRWind::finalize() { amrex::Finalize(); }
+void KynemaSGF::finalize() { amrex::Finalize(); }
 
-AMRWind::AMRWind(
+KynemaSGF::KynemaSGF(
     const std::vector<std::string>& cell_vars,
     const std::vector<std::string>& node_vars,
     TIOGA::tioga& tg)
@@ -53,24 +53,24 @@ AMRWind::AMRWind(
     m_incflo.sim().activate_overset();
 }
 
-AMRWind::~AMRWind() = default;
+KynemaSGF::~KynemaSGF() = default;
 
-void AMRWind::init_prolog(bool)
+void KynemaSGF::init_prolog(bool)
 {
     m_incflo.init_mesh();
-    m_incflo.init_amr_wind_modules();
+    m_incflo.init_kynema_sgf_modules();
 }
 
-void AMRWind::init_epilog() {}
+void KynemaSGF::init_epilog() {}
 
-void AMRWind::prepare_solver_prolog() {}
+void KynemaSGF::prepare_solver_prolog() {}
 
-void AMRWind::prepare_solver_epilog()
+void KynemaSGF::prepare_solver_epilog()
 {
     m_incflo.prepare_for_time_integration();
 }
 
-void AMRWind::pre_advance_stage0(size_t inonlin)
+void KynemaSGF::pre_advance_stage0(size_t inonlin)
 {
     if (inonlin < 1) {
         m_incflo.sim().time().new_timestep();
@@ -79,53 +79,56 @@ void AMRWind::pre_advance_stage0(size_t inonlin)
     }
 }
 
-void AMRWind::pre_advance_stage1(size_t inonlin)
+void KynemaSGF::pre_advance_stage1(size_t inonlin)
 {
     if (inonlin < 1) {
         m_incflo.pre_advance_stage1();
     }
 }
 
-void AMRWind::pre_advance_stage2(size_t inonlin)
+void KynemaSGF::pre_advance_stage2(size_t inonlin)
 {
     if (inonlin < 1) m_incflo.pre_advance_stage2();
 }
 
-double AMRWind::get_time() { return m_incflo.time().new_time(); }
+double KynemaSGF::get_time() { return m_incflo.time().new_time(); }
 
-double AMRWind::get_timestep_size() { return m_incflo.time().delta_t(); }
+double KynemaSGF::get_timestep_size() { return m_incflo.time().delta_t(); }
 
-void AMRWind::set_timestep_size(const double dt)
+void KynemaSGF::set_timestep_size(const double dt)
 {
     m_incflo.sim().time().delta_t() = dt;
 }
 
-bool AMRWind::is_fixed_timestep_size()
+bool KynemaSGF::is_fixed_timestep_size()
 {
     return (!m_incflo.sim().time().adaptive_timestep());
 }
 
-void AMRWind::advance_timestep(size_t inonlin) { m_incflo.do_advance(inonlin); }
+void KynemaSGF::advance_timestep(size_t inonlin)
+{
+    m_incflo.do_advance(inonlin);
+}
 
-void AMRWind::post_advance() { m_incflo.post_advance_work(); }
+void KynemaSGF::post_advance() { m_incflo.post_advance_work(); }
 
-void AMRWind::pre_overset_conn_work() { m_tgiface.pre_overset_conn_work(); }
+void KynemaSGF::pre_overset_conn_work() { m_tgiface.pre_overset_conn_work(); }
 
-void AMRWind::post_overset_conn_work() { m_tgiface.post_overset_conn_work(); }
+void KynemaSGF::post_overset_conn_work() { m_tgiface.post_overset_conn_work(); }
 
-void AMRWind::register_solution()
+void KynemaSGF::register_solution()
 {
     m_tgiface.register_solution(m_cell_vars, m_node_vars);
 }
 
-void AMRWind::update_solution() { m_tgiface.update_solution(); }
+void KynemaSGF::update_solution() { m_tgiface.update_solution(); }
 
-int AMRWind::overset_update_interval()
+int KynemaSGF::overset_update_interval()
 {
     const int regrid_int = m_incflo.sim().time().regrid_interval();
     return regrid_int > 0 ? regrid_int : 100000000;
 }
 
-int AMRWind::time_index() { return m_incflo.sim().time().time_index(); }
+int KynemaSGF::time_index() { return m_incflo.sim().time().time_index(); }
 
-} // namespace exawind
+} // namespace driver

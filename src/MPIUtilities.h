@@ -2,7 +2,7 @@
 #define MPIUTILITIES_H
 #include "mpi.h"
 
-namespace exawind {
+namespace driver {
 
 //! Create a subcommunicator
 MPI_Comm
@@ -28,5 +28,5 @@ create_subcomm(MPI_Comm comm, const int num_ranks, const int start_rank = 0)
     return sub_comm;
 }
 
-} // namespace exawind
+} // namespace driver
 #endif /* MPIUTILITIES_H */

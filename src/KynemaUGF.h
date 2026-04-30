@@ -1,5 +1,5 @@
-#ifndef NALUWIND_H
-#define NALUWIND_H
+#ifndef KYNEMAUGF_H
+#define KYNEMAUGF_H
 
 #include <vector>
 #include <string>
@@ -7,19 +7,19 @@
 #include "Simulation.h"
 #include "stk_util/parallel/Parallel.hpp"
 #include "yaml-cpp/yaml.h"
-#include "ExawindSolver.h"
+#include "KynemaSolver.h"
 
 namespace TIOGA {
 class tioga;
 }
 
-namespace exawind {
+namespace driver {
 
-class NaluWind : public ExawindSolver
+class KynemaUGF : public KynemaSolver
 {
 private:
     YAML::Node m_doc;
-    sierra::nalu::Simulation m_sim;
+    sierra::kynema_ugf::Simulation m_sim;
     std::vector<std::string> m_fnames;
     int m_ncomps;
     int m_id;
@@ -40,14 +40,14 @@ public:
         }
         return logfile;
     }
-    explicit NaluWind(
+    explicit KynemaUGF(
         int id,
         stk::ParallelMachine comm,
         const YAML::Node& inp_yaml,
         const std::string& logfile,
         const std::vector<std::string>& fnames,
         TIOGA::tioga& tg);
-    ~NaluWind();
+    ~KynemaUGF();
     bool is_unstructured() override { return true; }
     bool is_amr() override { return false; }
     bool is_fixed_timestep_size() override;
@@ -55,7 +55,7 @@ public:
     int time_index() override;
     std::string identifier() override
     {
-        return ("Nalu-Wind-" + std::to_string(m_id));
+        return ("Kynema-UGF-" + std::to_string(m_id));
     }
     MPI_Comm comm() override { return m_comm; }
     int get_ncomps() override { return m_ncomps; }
@@ -82,6 +82,6 @@ protected:
     MPI_Comm m_comm;
 };
 
-} // namespace exawind
+} // namespace driver
 
-#endif /* NALUWIND_H */
+#endif /* KYNEMAUGF_H */

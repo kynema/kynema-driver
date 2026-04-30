@@ -23,7 +23,7 @@ endif()
 message(STATUS "\nNumber of processes to use: ${NP}")
 
 set(CTEST_SITE "${HOST_NAME}")
-set(CTEST_BUILD_NAME "Exawind-${CMAKE_SYSTEM_NAME}${EXTRA_BUILD_NAME}")
+set(CTEST_BUILD_NAME "Kynema-${CMAKE_SYSTEM_NAME}${EXTRA_BUILD_NAME}")
 find_program(CTEST_GIT_COMMAND NAMES git)
 find_program(MAKE NAMES make)
 

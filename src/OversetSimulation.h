@@ -2,7 +2,7 @@
 #define OVERSETSIMULATION_H
 #include "mpi.h"
 #include "tioga.h"
-#include "ExawindSolver.h"
+#include "KynemaSolver.h"
 #include "ParallelPrinter.h"
 #include "Timers.h"
 
@@ -10,7 +10,7 @@ namespace TIOGA {
 class tioga;
 }
 
-namespace exawind {
+namespace driver {
 
 class OversetSimulation
 {
@@ -18,10 +18,10 @@ private:
     //! World communicator instance
     MPI_Comm m_comm;
     //! List of solvers active in this overset simulation
-    std::vector<std::unique_ptr<ExawindSolver>> m_solvers;
-    //! List of start ranks for all nalu-wind instances
-    int m_num_nw_solvers;
-    std::vector<int> m_nw_start_rank;
+    std::vector<std::unique_ptr<KynemaSolver>> m_solvers;
+    //! List of start ranks for all kynema-ugf instances
+    int m_num_ugf_solvers;
+    std::vector<int> m_ugf_start_rank;
     //! Flag indicating whether an AMR solver is active
     bool m_has_amr{false};
     //! Flag indicating whether an unstructured solver is active
@@ -103,15 +103,15 @@ public:
     //! track memory usage and print to file
     long mem_usage_all(const int step);
 
-    //! set number of nalu-wind instances
-    void set_nw_start_rank(const std::vector<int>& start_ranks)
+    //! set number of kynema-ugf instances
+    void set_ugf_start_rank(const std::vector<int>& start_ranks)
     {
         if (!start_ranks.empty()) {
-            m_nw_start_rank = start_ranks;
+            m_ugf_start_rank = start_ranks;
         } else {
-            m_nw_start_rank.clear();
+            m_ugf_start_rank.clear();
         }
-        m_num_nw_solvers = m_nw_start_rank.size();
+        m_num_ugf_solvers = m_ugf_start_rank.size();
     }
 
     void set_holemap_alg(bool alg)
@@ -145,5 +145,5 @@ public:
     }
 };
 
-} // namespace exawind
+} // namespace driver
 #endif /* OVERSETSIMULATION_H */

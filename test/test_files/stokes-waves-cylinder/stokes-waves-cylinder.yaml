@@ -1,19 +1,19 @@
 
-exawind:
-  nalu_wind_inp:
-    - stokes-waves-cylinder-nalu.yaml
-  amr_wind_inp: stokes-waves-cylinder-amr.inp
+kynema_driver:
+  kynema_ugf_inp:
+    - stokes-waves-cylinder-ugf.yaml
+  kynema_sgf_inp: stokes-waves-cylinder-sgf.inp
   num_timesteps: 10
   additional_picard_iterations: 1
 
-  nalu_vars:
+  ugf_vars:
     - volume_of_fluid
     - velocity
     - density
     - pressure
-  amr_cell_vars:
+  sgf_cell_vars:
     - vof
     - velocity
     - density
-  amr_node_vars:
+  sgf_node_vars:
     - p
