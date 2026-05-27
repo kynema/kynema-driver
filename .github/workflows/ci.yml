@@ -1,4 +1,4 @@
-name: KynemaDriver-CI
+name: Kynema-Driver-CI
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
     needs: Formatting
     runs-on: ubuntu-24.04
     container:
-      image: ecpe4s/kynema-snapshot
+      image: roodj/kynema
       env:
           KYNEMA_MANAGER: /kynema-manager
           E4S_MACHINE: true
