@@ -25,7 +25,7 @@ jobs:
     needs: Formatting
     runs-on: ubuntu-24.04
     container:
-      image: roodj/kynema
+      image: roodj/kynema-snapshot:latest
       env:
           KYNEMA_MANAGER: /kynema-manager
           E4S_MACHINE: true
@@ -41,7 +41,7 @@ jobs:
             spack env activate e4s-build && \
             cd ${KYNEMA_MANAGER}/environments/e4s-build && \
             ln -s ${GITHUB_WORKSPACE} kynema-driver && \
-            spack develop --no-modify-concrete-specs --no-clone kynema-driver@=main && \
+            spack develop --no-modify-concrete-specs --no-clone kynema-driver@main && \
             spack concretize -f && \
             spack install && \
             spack cd -b kynema-driver && \
