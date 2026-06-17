@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-      - name: Tests
+      - name: Test
         run: |
           /bin/bash -c " \
             source ${KYNEMA_MANAGER}/start.sh && spack-start && \
@@ -42,6 +42,8 @@ jobs:
             cd ${KYNEMA_MANAGER}/environments/e4s-build && \
             ln -s ${GITHUB_WORKSPACE} kynema-driver && \
             spack develop --no-modify-concrete-specs --no-clone kynema-driver@main && \
+            spack rm kynema && \
+            spack add kynema-driver@main && \
             spack concretize -f && \
             spack install && \
             spack cd -b kynema-driver && \
