@@ -42,6 +42,7 @@ jobs:
             cd ${KYNEMA_MANAGER}/environments/e4s-build && \
             ln -s ${GITHUB_WORKSPACE} kynema-driver && \
             spack develop --no-modify-concrete-specs --no-clone kynema-driver@main && \
+            spack concretize -f && \
             spack install && \
             spack cd -b kynema-driver && \
             spack build-env kynema-driver ctest -j $(nproc) -LE no-ci --output-on-failure \
