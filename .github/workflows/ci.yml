@@ -43,7 +43,7 @@ jobs:
             ln -s ${GITHUB_WORKSPACE} kynema-driver && \
             spack develop --no-modify-concrete-specs --no-clone kynema-driver@main && \
             spack rm kynema && \
-            spack add kynema-driver@main~kynema-fmb~kynema_sgf_gpu~kynema_ugf_gpu+tests && \
+            spack add kynema-driver@main~kynema-fmb~kynema_sgf_gpu~kynema_ugf_gpu~tests && \
             spack concretize --reuse -f && \
             spack install && \
             spack cd -b kynema-driver && \
