@@ -14,6 +14,11 @@ target_sources(${KYNEMA_DRIVER_LIB_NAME} PRIVATE
   MemoryUsage.h
   MemoryUsage.cpp)
 
+# Keep host-only sources out of nvcc to avoid a cudafe++ crash with GCC 13 libstdc++ headers.
+set_property(TARGET ${KYNEMA_DRIVER_LIB_NAME} APPEND PROPERTY
+  KYNEMA_DRIVER_HOST_ONLY_CXX_SOURCES
+  ${CMAKE_CURRENT_SOURCE_DIR}/MemoryUsage.cpp)
+
 target_include_directories(${KYNEMA_DRIVER_LIB_NAME} PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR})
 
