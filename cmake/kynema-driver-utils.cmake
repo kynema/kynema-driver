@@ -1,19 +1,24 @@
 function(set_cuda_build_properties target)
   get_target_property(_tgt_src ${target} SOURCES)
   list(FILTER _tgt_src INCLUDE REGEX "\\.cpp")
+  set(_cuda_src ${_tgt_src})
 
   get_target_property(_host_only_src ${target} KYNEMA_DRIVER_HOST_ONLY_CXX_SOURCES)
-  if(_host_only_src)
-    foreach(_src IN LISTS _host_only_src)
-      get_filename_component(_src_name "${_src}" NAME)
-      file(RELATIVE_PATH _src_rel "${CMAKE_SOURCE_DIR}" "${_src}")
-      list(REMOVE_ITEM _tgt_src "${_src}" "${_src_rel}" "${_src_name}")
-    endforeach()
-    set_source_files_properties(${_host_only_src} PROPERTIES LANGUAGE CXX)
+  if(_host_only_src AND NOT _host_only_src STREQUAL "_host_only_src-NOTFOUND")
+    set_source_files_properties(${_host_only_src} PROPERTIES
+      KYNEMA_DRIVER_HOST_ONLY_CXX ON
+      LANGUAGE CXX)
   endif()
 
-  if(_tgt_src)
-    set_source_files_properties(${_tgt_src} PROPERTIES LANGUAGE CUDA)
+  foreach(_src IN LISTS _tgt_src)
+    get_source_file_property(_host_only "${_src}" KYNEMA_DRIVER_HOST_ONLY_CXX)
+    if(_host_only)
+      list(REMOVE_ITEM _cuda_src "${_src}")
+    endif()
+  endforeach()
+
+  if(_cuda_src)
+    set_source_files_properties(${_cuda_src} PROPERTIES LANGUAGE CUDA)
   endif()
   set_target_properties(${target} PROPERTIES CUDA_ARCHITECTURES "${KYNEMA_DRIVER_CUDA_ARCH}")
   set_target_properties(${target} PROPERTIES CUDA_RESOLVE_DEVICE_SYMBOLS ON)
