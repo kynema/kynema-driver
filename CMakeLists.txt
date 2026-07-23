@@ -82,9 +82,14 @@ endif()
 
 if(KYNEMA_DRIVER_ENABLE_CUDA)
   include(kynema-driver-utils)
+  # Host-only sources that must not be compiled as CUDA (i.e. must bypass
+  # nvcc/cudafe++) — see set_cuda_build_properties() for details.
+  set(_kynema_host_only_srcs
+    "${CMAKE_SOURCE_DIR}/src/MemoryUsage.cpp"
+  )
   set(kyntargets "${KYNEMA_DRIVER_LIB_NAME};${KYNEMA_DRIVER_EXE_NAME}")
   foreach(tgt IN LISTS kyntargets)
-    set_cuda_build_properties(${tgt})
+    set_cuda_build_properties(${tgt} ${_kynema_host_only_srcs})
   endforeach()
 endif()
 
