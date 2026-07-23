@@ -3,8 +3,9 @@ function(set_cuda_build_properties target)
   list(FILTER _tgt_src INCLUDE REGEX "\\.cpp")
   set(_cuda_src ${_tgt_src})
 
-  get_target_property(_host_only_src ${target} KYNEMA_DRIVER_HOST_ONLY_CXX_SOURCES)
-  if(_host_only_src)
+  get_property(_has_host_only_src TARGET ${target} PROPERTY KYNEMA_DRIVER_HOST_ONLY_CXX_SOURCES SET)
+  if(_has_host_only_src)
+    get_target_property(_host_only_src ${target} KYNEMA_DRIVER_HOST_ONLY_CXX_SOURCES)
     # Tag host-only sources so they can be removed from the CUDA list before
     # LANGUAGE CUDA is applied to the remaining .cpp translation units.
     set_source_files_properties(${_host_only_src} PROPERTIES
