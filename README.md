@@ -1,4 +1,4 @@
-# ExaWind Simulation Driver
+# Hybrid Kynema Simulation Driver
 [![journal article](https://img.shields.io/badge/DOI-10.1002/we.2886-blue)](https://doi.org/10.1002/we.2886)
 
 This repository contains a pure C++ driver API for coupling
@@ -7,7 +7,7 @@ This repository contains a pure C++ driver API for coupling
 
 ## Citation
 
-To cite ExaWind or the usage of this driver and to learn more about the methodology, use the following [journal article](https://doi.org/10.1002/we.2886):
+To cite the hybrid Kynema solver (formerly ExaWind) or the usage of this driver and to learn more about the methodology, use the following [journal article](https://doi.org/10.1002/we.2886):
 ```
 @article{https://doi.org/10.1002/we.2886,
     author = {Sharma, Ashesh and Brazell, Michael J. and Vijayakumar, Ganesh and Ananthan, Shreyas and Cheung, Lawrence and deVelder, Nathaniel and {Henry de Frahan}, Marc T. and Matula, Neil and Mullowney, Paul and Rood, Jon and Sakievich, Philip and Almgren, Ann and Crozier, Paul S. and Sprague, Michael},
