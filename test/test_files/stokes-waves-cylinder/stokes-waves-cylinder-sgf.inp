@@ -100,7 +100,7 @@ xhi.type =   "pressure_outflow"
 ylo.type =   "slip_wall"
 yhi.type =   "slip_wall"
 zlo.type =   "slip_wall"
-zhi.type =   "slip_wall"
+zhi.type =   "pressure_outflow"
 
 incflo.verbose          =   0          # incflo_level
 amrex.the_arena_init_size = 0
