@@ -163,32 +163,45 @@ void OversetSimulation::run_timesteps(
 
             bool increment_timer = inonlin > 0 ? true : false;
 
-            double dt{1e8};
+            // ===== MODULAR SOLVER INTERFACE =====
+            // Each solver executes its modular operations in sequence:
+            // 1. set_inputs(): Initialize and set boundary/coupling inputs
             for (auto& ss : m_solvers) {
-                ss->call_pre_advance_stage0(inonlin, increment_timer);
-                if (inonlin < 1 && !m_fixed_dt) {
-                    dt = std::min(dt, ss->call_get_timestep_size());
-                }
+                ss->call_set_inputs(inonlin, increment_timer);
             }
 
+            // Compute and communicate timestep (first iteration only, adaptive dt)
             if (inonlin < 1 && !m_fixed_dt) {
+                double dt{1e8};
+                for (auto& ss : m_solvers) {
+                    dt = std::min(dt, ss->call_get_timestep_size());
+                }
                 MPI_Allreduce(
                     MPI_IN_PLACE, &dt, 1, MPI_DOUBLE, MPI_MIN, m_comm);
                 for (auto& ss : m_solvers) ss->call_set_timestep_size(dt);
             }
 
-            for (auto& ss : m_solvers)
-                ss->call_pre_advance_stage1(inonlin, increment_timer);
+            // 2. predict_inputs(): Predict/extrapolate inputs for coupling
+            for (auto& ss : m_solvers) {
+                ss->call_predict_inputs(inonlin, increment_timer);
+            }
 
+            // Overset connectivity update (external to modules)
             if (do_connectivity(nt)) perform_overset_connectivity();
 
-            for (auto& ss : m_solvers)
-                ss->call_pre_advance_stage2(inonlin, increment_timer);
-
+            // Couple solvers via solution exchange (external to modules)
             exchange_solution(increment_timer);
 
-            for (auto& ss : m_solvers)
-                ss->call_advance_timestep(inonlin, increment_timer);
+            // 3. advance_states(): Advance the solution one timestep
+            for (auto& ss : m_solvers) {
+                ss->call_advance_states(inonlin, increment_timer);
+            }
+
+            // 4. calculate_outputs(): Compute derived quantities and outputs
+            for (auto& ss : m_solvers) {
+                ss->call_calculate_outputs(inonlin, increment_timer);
+            }
+            // =====================================
         }
 
         if (add_pic_its > 0) {
@@ -196,8 +209,6 @@ void OversetSimulation::run_timesteps(
             for (auto& ss : m_solvers)
                 ss->call_additional_picard_iterations(add_pic_its);
         }
-
-        for (auto& ss : m_solvers) ss->call_post_advance();
 
         MPI_Barrier(m_comm);
 

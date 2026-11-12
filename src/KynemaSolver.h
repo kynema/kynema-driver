@@ -119,6 +119,38 @@ public:
 
     void call_dump_simulation_time() { dump_simulation_time(); };
 
+    // ========== New modular solver interface ==========
+    // These methods define the timestepping behavior within the nonlinear iteration loop
+    void call_set_inputs(size_t inonlin, const bool increment)
+    {
+        const std::string name = "SetInputs";
+        m_timers.tick(name, increment);
+        set_inputs(inonlin);
+        m_timers.tock(name);
+    }
+    void call_predict_inputs(size_t inonlin, const bool increment)
+    {
+        const std::string name = "PredictInputs";
+        m_timers.tick(name, increment);
+        predict_inputs(inonlin);
+        m_timers.tock(name);
+    }
+    void call_advance_states(size_t inonlin, const bool increment)
+    {
+        const std::string name = "AdvanceStates";
+        m_timers.tick(name, increment);
+        advance_states(inonlin);
+        m_timers.tock(name);
+    }
+    void call_calculate_outputs(size_t inonlin, const bool increment)
+    {
+        const std::string name = "CalculateOutputs";
+        m_timers.tick(name, increment);
+        calculate_outputs(inonlin);
+        m_timers.tock(name);
+    }
+    // ===================================================
+
     virtual bool is_unstructured() { return false; };
     virtual bool is_amr() { return false; };
     virtual bool is_fixed_timestep_size() = 0;
@@ -130,7 +162,8 @@ public:
     void timing_details();
     //! Timer names
     std::vector<std::string> m_names{
-        "Pre", "PreConn", "PostConn", "Register", "Update", "Solve", "Post"};
+        "Pre", "PreConn", "PostConn", "Register", "Update", "Solve", "Post",
+        "SetInputs", "PredictInputs", "AdvanceStates", "CalculateOutputs"};
     //! Timers
     Timers m_timers;
 
@@ -153,6 +186,33 @@ protected:
     virtual void register_solution() = 0;
     virtual void update_solution() = 0;
     virtual void dump_simulation_time() = 0;
+
+    // ========== New modular solver interface ==========
+    // These virtual methods define the modular timestepping behavior.
+    // Solvers can override these to implement the new modular interface.
+    // Default implementations are provided for backward compatibility.
+    virtual void set_inputs(size_t inonlin)
+    {
+        // Default: use existing pre_advance_stage0 behavior
+        pre_advance_stage0(inonlin);
+    }
+    virtual void predict_inputs(size_t inonlin)
+    {
+        // Default: use existing pre_advance_stage1 and pre_advance_stage2 behavior
+        pre_advance_stage1(inonlin);
+        pre_advance_stage2(inonlin);
+    }
+    virtual void advance_states(size_t inonlin)
+    {
+        // Default: use existing advance_timestep behavior
+        advance_timestep(inonlin);
+    }
+    virtual void calculate_outputs(size_t inonlin)
+    {
+        // Default: use existing post_advance behavior
+        post_advance();
+    }
+    // ===================================================
 };
 
 } // namespace driver
