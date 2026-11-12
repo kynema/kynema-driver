@@ -120,3 +120,7 @@ add_test_re(stokes-waves-cylinder 781.64)
 if(KYNEMA_UGF_USES_KYNEMA_FMB)
   add_test_r(floating-block)
 endif()
+# FMB modular solver test
+if(KYNEMA_FMB_FOUND)
+  add_test_r(fmb-6dof-modular)
+endif()

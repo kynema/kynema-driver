@@ -37,7 +37,7 @@ if (KYNEMA_DRIVER_ENABLE_UMPIRE)
 endif()
 
 set(CMAKE_PREFIX_PATH ${Kynema-UGF_DIR} ${Trilinos_DIR} ${Kynema-SGF_DIR}
-                      ${OpenFAST_DIR} ${TIOGA_DIR}
+                      ${OpenFAST_DIR} ${TIOGA_DIR} ${Kynema-FMB_DIR}
                       ${YAML-CPP_DIR} ${CMAKE_PREFIX_PATH})
 
 find_package(Kynema-UGF REQUIRED)
@@ -50,6 +50,14 @@ endif()
 find_package(TIOGA REQUIRED)
 find_package(YAML-CPP 0.6.2 REQUIRED)
 find_package(MPI REQUIRED)
+
+# Optional FMB support for modular solver example
+find_package(Kynema-FMB QUIET)
+if(Kynema-FMB_FOUND)
+  message(STATUS "Kynema-FMB found - FMB modular solver example will be built")
+else()
+  message(STATUS "Kynema-FMB not found - FMB modular solver example will be skipped")
+endif()
 
 # General information about machine, compiler, and build type
 message(STATUS "Kynema-Driver information:")

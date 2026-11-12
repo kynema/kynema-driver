@@ -62,12 +62,19 @@ public:
     OversetSimulation(MPI_Comm comm);
     ~OversetSimulation();
 
-    //! Register a solver
+    //! Register a solver (legacy - passes Tioga instance)
     template <class Solver, class... Args>
     void register_solver(Args... args)
     {
         m_solvers.emplace_back(
             std::make_unique<Solver>(std::forward<Args>(args)..., m_tg));
+    }
+
+    //! Register a solver without Tioga (for standalone solvers like FMB)
+    template <class Solver, class... Args>
+    void register_solver_no_tioga(Args... args)
+    {
+        m_solvers.emplace_back(std::make_unique<Solver>(std::forward<Args>(args)...));
     }
 
     //! Delete solvers
