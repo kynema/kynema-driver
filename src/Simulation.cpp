@@ -218,6 +218,11 @@ void Simulation::run_timesteps(
             // Couple solvers via solution exchange (external to modules)
             exchange_solution(increment_timer);
 
+            if (inonlin > 0) {
+                for (auto& ss : m_solvers)
+                    ss->call_reset_states(increment_timer);
+            }
+
             for (auto& ss : m_solvers) {
                 ss->call_advance_states(inonlin, increment_timer);
             }

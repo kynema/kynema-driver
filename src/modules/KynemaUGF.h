@@ -69,6 +69,7 @@ protected:
     void prepare_solver_epilog() override;
     void set_inputs(size_t inonlin) override;
     void predict_inputs(size_t inonlin) override;
+    void reset_states() override {}
     void advance_states(size_t inonlin) override;
     void calculate_outputs(size_t) override {}
     double get_time() override;

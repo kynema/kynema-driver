@@ -10,7 +10,7 @@ class Module
 {
 public:
     explicit Module() : m_timers(m_names) {};
-    virtual ~Module();
+    virtual ~Module() = default;
 
     void call_init_prolog(bool multi_solver_mode = true)
     {
@@ -113,6 +113,13 @@ public:
         advance_states(inonlin);
         m_timers.tock(name);
     }
+    void call_reset_states(const bool increment)
+    {
+        const std::string name = "ResetStates";
+        m_timers.tick(name, increment);
+        reset_states();
+        m_timers.tock(name);
+    }
     void call_calculate_outputs(size_t inonlin, const bool increment)
     {
         const std::string name = "CalculateOutputs";
@@ -132,8 +139,9 @@ public:
     void timing_details();
     //! Timer names
     std::vector<std::string> m_names{
-        "Pre", "PreConn", "PostConn", "Register", "Update", "Post",
-        "SetInputs", "PredictInputs", "AdvanceStates", "CalculateOutputs"};
+        "Pre",         "PreConn",       "PostConn",        "Register",
+        "Update",      "Post",          "SetInputs",       "PredictInputs",
+        "ResetStates", "AdvanceStates", "CalculateOutputs"};
     //! Timers
     Timers m_timers;
 
@@ -156,6 +164,7 @@ protected:
 
     virtual void set_inputs(size_t inonlin) = 0;
     virtual void predict_inputs(size_t inonlin) = 0;
+    virtual void reset_states() = 0;
     virtual void advance_states(size_t inonlin) = 0;
     virtual void calculate_outputs(size_t inonlin) = 0;
 };

@@ -2,6 +2,9 @@
 
 The driver coordinator is `driver::Simulation` in `src/Simulation.h`.
 The shared module interface is `driver::Module` in `src/Module.h`.
+Every module implements `reset_states()`, called before advancing subsequent
+nonlinear iterations. SGF and UGF currently keep their existing state handling
+and implement this hook as a no-op.
 Module implementations and the SGF Tioga adapter live in `src/modules/`.
 Include driver headers with their `src/` paths to distinguish the driver's
 `Simulation.h` from the UGF library header of the same name.
@@ -43,6 +46,15 @@ default to ON; `KYNEMA_DRIVER_ENABLE_FMB` defaults to OFF. Set an option to
 OFF to build without that module's driver dependency, or enable FMB and
 provide `KynemaFMB_DIR` to use it. Tioga and MPI remain driver dependencies.
 A YAML file selecting a module disabled in the build is an error.
+
+FMB's `GeneralStructureInterface` implements `driver::Module` directly;
+the driver header `src/modules/KynemaFMB.h` is only a type alias, not a
+timestepping wrapper. FMB always builds this interface, including for standalone
+use, and requires MPI. Its build embeds the shared header-only interface in the
+installation without a dependency on the driver library.
+`KYNEMA_FMB_DRIVER_MODULE_DIR` only locates these headers; it defaults to the
+sibling `kynema-driver/src` directory and is not an integration toggle.
+SGF and UGF still use adapters pending refactoring in their respective repositories.
 
 Modules execute in the same timestep loop. SGF/UGF overset exchange is
 performed when multiple CFD modules are selected. FMB currently runs alongside

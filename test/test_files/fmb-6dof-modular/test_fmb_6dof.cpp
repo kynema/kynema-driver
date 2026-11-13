@@ -48,9 +48,15 @@ void run_test(const char* input_file)
         reference.receive_inputs(forces);
         reference.reset_states();
         reference.advance_states();
+        const int iterations = step >= 30 ? 3 : 2;
+        const int picard_iterations = step >= 35 ? 1 : 0;
+        for (int i = 2; i < iterations + picard_iterations; ++i) {
+            reference.reset_states();
+            reference.advance_states();
+        }
         reference.calculate_outputs();
 
-        simulation.run_timesteps(0, 2, 1);
+        simulation.run_timesteps(picard_iterations, iterations, 1);
 
         const auto& expected = reference.get_outputs().x;
         for (size_t node = 0; node < num_nodes; ++node) {
