@@ -22,17 +22,17 @@ Simulation::Simulation(MPI_Comm comm)
 
 Simulation::~Simulation() = default;
 
-void Simulation::check_solver_types()
+void Simulation::check_module_types()
 {
     bool flag[2] = {false, false};
     bool gflag[2] = {false, false};
     flag[0] =
-        std::any_of(m_solvers.begin(), m_solvers.end(), [](const auto& ss) {
-            return ss->is_amr();
+        std::any_of(m_modules.begin(), m_modules.end(), [](const auto& module) {
+            return module->is_amr();
         });
     flag[1] =
-        std::any_of(m_solvers.begin(), m_solvers.end(), [](const auto& ss) {
-            return ss->is_unstructured();
+        std::any_of(m_modules.begin(), m_modules.end(), [](const auto& module) {
+            return module->is_unstructured();
         });
     MPI_Allreduce(flag, gflag, 2, MPI_C_BOOL, MPI_LOR, m_comm);
     m_has_amr = gflag[0];
@@ -43,8 +43,8 @@ void Simulation::determine_overset_interval()
 {
     int flag[1] = {m_overset_update_interval};
     int gflag[1] = {m_overset_update_interval};
-    for (auto& ss : m_solvers) {
-        flag[0] = std::min(flag[0], ss->overset_update_interval());
+    for (auto& module : m_modules) {
+        flag[0] = std::min(flag[0], module->overset_update_interval());
     }
     MPI_Allreduce(flag, gflag, 1, MPI_INT, MPI_MIN, m_comm);
     m_overset_update_interval = gflag[0];
@@ -55,53 +55,53 @@ void Simulation::determine_overset_interval()
 
 void Simulation::initialize()
 {
-    check_solver_types();
-    int local_solvers = 0;
-    int local_cfd_solvers = 0;
-    for (auto& ss : m_solvers) {
+    check_module_types();
+    int local_modules = 0;
+    int local_cfd_modules = 0;
+    for (auto& module : m_modules) {
         int rank = 0;
-        MPI_Comm_rank(ss->comm(), &rank);
+        MPI_Comm_rank(module->comm(), &rank);
         if (rank == 0) {
-            ++local_solvers;
-            if (ss->is_amr() || ss->is_unstructured()) ++local_cfd_solvers;
+            ++local_modules;
+            if (module->is_amr() || module->is_unstructured()) ++local_cfd_modules;
         }
     }
-    int global_solvers = 0, global_cfd_solvers = 0;
-    MPI_Allreduce(&local_solvers, &global_solvers, 1, MPI_INT, MPI_SUM, m_comm);
-    MPI_Allreduce(&local_cfd_solvers, &global_cfd_solvers, 1, MPI_INT, MPI_SUM, m_comm);
-    if (global_solvers == 0) throw std::runtime_error("No solvers registered");
-    m_use_overset = global_cfd_solvers > 1;
+    int global_modules = 0, global_cfd_modules = 0;
+    MPI_Allreduce(&local_modules, &global_modules, 1, MPI_INT, MPI_SUM, m_comm);
+    MPI_Allreduce(&local_cfd_modules, &global_cfd_modules, 1, MPI_INT, MPI_SUM, m_comm);
+    if (global_modules == 0) throw std::runtime_error("No modules registered");
+    m_use_overset = global_cfd_modules > 1;
 
-    for (auto& ss : m_solvers) ss->call_init_prolog(m_use_overset);
+    for (auto& module : m_modules) module->call_init_prolog(m_use_overset);
 
     determine_overset_interval();
 
-    for (auto& ss : m_solvers) {
-        ss->call_init_epilog();
-        ss->call_prepare_solver_prolog();
+    for (auto& module : m_modules) {
+        module->call_init_epilog();
+        module->call_prepare_module_prolog();
     }
 
     perform_overset_connectivity();
     exchange_solution();
 
-    for (auto& ss : m_solvers) ss->call_prepare_solver_epilog();
+    for (auto& module : m_modules) module->call_prepare_module_epilog();
 
     int min_step = std::numeric_limits<int>::max();
     int max_step = std::numeric_limits<int>::min();
-    for (auto& ss : m_solvers) {
-        min_step = std::min(min_step, ss->time_index());
-        max_step = std::max(max_step, ss->time_index());
+    for (auto& module : m_modules) {
+        min_step = std::min(min_step, module->time_index());
+        max_step = std::max(max_step, module->time_index());
     }
     MPI_Allreduce(MPI_IN_PLACE, &min_step, 1, MPI_INT, MPI_MIN, m_comm);
     MPI_Allreduce(MPI_IN_PLACE, &max_step, 1, MPI_INT, MPI_MAX, m_comm);
     if (min_step != max_step) {
-        throw std::runtime_error("Mismatch in solver time steps.");
+        throw std::runtime_error("Mismatch in module time steps.");
     }
     m_last_timestep = min_step;
 
-    // Determine if any of the solvers have adaptive timestepping
-    for (auto& ss : m_solvers) {
-        m_fixed_dt = m_fixed_dt && ss->is_fixed_timestep_size();
+    // Determine if any of the modules have adaptive timestepping
+    for (auto& module : m_modules) {
+        m_fixed_dt = m_fixed_dt && module->is_fixed_timestep_size();
     }
     MPI_Allreduce(MPI_IN_PLACE, &m_fixed_dt, 1, MPI_C_BOOL, MPI_LAND, m_comm);
 
@@ -111,7 +111,7 @@ void Simulation::initialize()
 void Simulation::perform_overset_connectivity()
 {
     if (!m_use_overset) return;
-    for (auto& ss : m_solvers) ss->call_pre_overset_conn_work();
+    for (auto& module : m_modules) module->call_pre_overset_conn_work();
 
     m_timers_tg.tick("Connectivity");
     if (m_has_amr) m_tg.preprocess_amr_data();
@@ -126,15 +126,15 @@ void Simulation::perform_overset_connectivity()
     if (m_has_amr) m_tg.performConnectivityAMR();
     m_timers_tg.tock("Connectivity");
 
-    for (auto& ss : m_solvers) ss->call_post_overset_conn_work();
+    for (auto& module : m_modules) module->call_post_overset_conn_work();
 }
 
 void Simulation::exchange_solution(bool increment_time)
 {
     // SGF and UGF need their second pre-advance stage after connectivity.
-    for (auto& ss : m_solvers) ss->call_prepare_solution_exchange();
+    for (auto& module : m_modules) module->call_prepare_solution_exchange();
     if (!m_use_overset) return;
-    for (auto& ss : m_solvers) ss->call_register_solution();
+    for (auto& module : m_modules) module->call_register_solution();
 
     m_timers_tg.tick("SolExchange", increment_time);
     if (m_has_amr) {
@@ -144,14 +144,14 @@ void Simulation::exchange_solution(bool increment_time)
         // assuming this pathway is kynema-ugf only and all instances have same
         // number of field components
         int ncomps = 0;
-        for (auto& ss : m_solvers)
-            if (ss->is_unstructured()) ncomps = std::max(ncomps, ss->get_ncomps());
+        for (auto& module : m_modules)
+            if (module->is_unstructured()) ncomps = std::max(ncomps, module->get_ncomps());
         MPI_Allreduce(MPI_IN_PLACE, &ncomps, 1, MPI_INT, MPI_MAX, m_comm);
         m_tg.dataUpdate(ncomps, row_major);
     }
     m_timers_tg.tock("SolExchange");
 
-    for (auto& ss : m_solvers) ss->call_update_solution();
+    for (auto& module : m_modules) module->call_update_solution();
 }
 
 void Simulation::run_timesteps(
@@ -174,7 +174,7 @@ void Simulation::run_timesteps(
     int nt = tstart;
     auto current_time = [&]() {
         double result = std::numeric_limits<double>::max();
-        for (auto& ss : m_solvers) result = std::min(result, ss->call_get_time());
+        for (auto& module : m_modules) result = std::min(result, module->call_get_time());
         MPI_Allreduce(MPI_IN_PLACE, &result, 1, MPI_DOUBLE, MPI_MIN, m_comm);
         return result;
     };
@@ -192,52 +192,52 @@ void Simulation::run_timesteps(
 
             bool increment_timer = inonlin > 0 ? true : false;
 
-            for (auto& ss : m_solvers) {
-                ss->call_set_inputs(inonlin, increment_timer);
+            for (auto& module : m_modules) {
+                module->call_set_inputs(inonlin, increment_timer);
             }
 
             // Compute and communicate timestep (first iteration only, adaptive
             // dt)
             if (inonlin < 1 && !m_fixed_dt) {
                 double dt{1e8};
-                for (auto& ss : m_solvers) {
-                    dt = std::min(dt, ss->call_get_timestep_size());
+                for (auto& module : m_modules) {
+                    dt = std::min(dt, module->call_get_timestep_size());
                 }
                 MPI_Allreduce(
                     MPI_IN_PLACE, &dt, 1, MPI_DOUBLE, MPI_MIN, m_comm);
-                for (auto& ss : m_solvers) ss->call_set_timestep_size(dt);
+                for (auto& module : m_modules) module->call_set_timestep_size(dt);
             }
 
-            for (auto& ss : m_solvers) {
-                ss->call_predict_inputs(inonlin, increment_timer);
+            for (auto& module : m_modules) {
+                module->call_predict_inputs(inonlin, increment_timer);
             }
 
             // Overset connectivity update (external to modules)
             if (do_connectivity(nt)) perform_overset_connectivity();
 
-            // Couple solvers via solution exchange (external to modules)
+            // Couple modules via solution exchange (external to modules)
             exchange_solution(increment_timer);
 
             if (inonlin > 0) {
-                for (auto& ss : m_solvers)
-                    ss->call_reset_states(increment_timer);
+                for (auto& module : m_modules)
+                    module->call_reset_states(increment_timer);
             }
 
-            for (auto& ss : m_solvers) {
-                ss->call_advance_states(inonlin, increment_timer);
+            for (auto& module : m_modules) {
+                module->call_advance_states(inonlin, increment_timer);
             }
 
-            for (auto& ss : m_solvers) {
-                ss->call_calculate_outputs(inonlin, increment_timer);
+            for (auto& module : m_modules) {
+                module->call_calculate_outputs(inonlin, increment_timer);
             }
         }
 
         if (add_pic_its > 0) {
             exchange_solution(true);
-            for (auto& ss : m_solvers)
-                ss->call_additional_picard_iterations(add_pic_its);
+            for (auto& module : m_modules)
+                module->call_additional_picard_iterations(add_pic_its);
         }
-        for (auto& ss : m_solvers) ss->call_finalize_time_step();
+        for (auto& module : m_modules) module->call_finalize_time_step();
 
         MPI_Barrier(m_comm);
 
@@ -257,7 +257,7 @@ void Simulation::run_timesteps(
         time_check = max_time > 0. ? time < max_time : true;
         do_step = step_check && time_check;
     }
-    for (auto& ss : m_solvers) ss->call_dump_simulation_time();
+    for (auto& module : m_modules) module->call_dump_simulation_time();
     m_last_timestep = nt - 1;
 }
 
@@ -288,18 +288,18 @@ void Simulation::print_timing(const int nt)
         "Tioga", nt, m_comm, m_printer.io_rank());
     m_printer.timing_to_file(timing_detail);
 
-    // cfd solver-specific timing
-    for (auto& ss : m_solvers) {
-        ParallelPrinter printer(ss->comm());
+    // cfd module-specific timing
+    for (auto& module : m_modules) {
+        ParallelPrinter printer(module->comm());
 
         // summary timings
-        std::string timings_summary = ss->m_timers.get_timings_summary(
-            ss->identifier(), nt, ss->comm(), printer.io_rank());
+        std::string timings_summary = module->m_timers.get_timings_summary(
+            module->identifier(), nt, module->comm(), printer.io_rank());
         printer.echo(timings_summary);
 
         // detailed timings
-        std::string timings_detail = ss->m_timers.get_timings_detail(
-            ss->identifier(), nt, ss->comm(), printer.io_rank());
+        std::string timings_detail = module->m_timers.get_timings_detail(
+            module->identifier(), nt, module->comm(), printer.io_rank());
         printer.timing_to_file(timings_detail);
     }
 

@@ -19,7 +19,7 @@ void run_test(const char* input_file)
     using Interface = kynema_fmb::interfaces::GeneralStructureInterface;
     const YAML::Node input = YAML::LoadFile(input_file);
     driver::Simulation simulation(MPI_COMM_WORLD);
-    auto& solver = simulation.register_solver_no_tioga<driver::KynemaFMB>(
+    auto& module = simulation.register_module_no_tioga<driver::KynemaFMB>(
         input, MPI_COMM_WORLD);
     simulation.initialize();
 
@@ -28,7 +28,7 @@ void run_test(const char* input_file)
     const auto num_nodes = description["model"]["num_nodes"].as<size_t>();
     const auto mass_node =
         description["components"][0]["mass_node_id"].as<size_t>();
-    if (solver.num_nodes() != num_nodes || mass_node >= num_nodes) {
+    if (module.num_nodes() != num_nodes || mass_node >= num_nodes) {
         throw std::runtime_error("FMB model description does not match");
     }
 
@@ -41,7 +41,7 @@ void run_test(const char* input_file)
             forces(mass_node, 2) = 50.;
             driver_forces[mass_node][2] = 50.;
         }
-        solver.set_forces(driver_forces);
+        module.set_forces(driver_forces);
 
         reference.predict_inputs();
         reference.advance_states();
@@ -60,7 +60,7 @@ void run_test(const char* input_file)
 
         const auto& expected = reference.get_outputs().x;
         for (size_t node = 0; node < num_nodes; ++node) {
-            const auto actual = solver.node_position(node);
+            const auto actual = module.node_position(node);
             for (size_t component = 0; component < actual.size(); ++component) {
                 if (!std::isfinite(actual[component]) ||
                     !std::isfinite(expected(node, component)) ||
@@ -74,8 +74,8 @@ void run_test(const char* input_file)
             }
         }
         reference.finalize_time_step();
-        if (solver.time_index() != step + 1 ||
-            std::abs(solver.call_get_time() - (step + 1) * dt) > 1.e-10) {
+        if (module.time_index() != step + 1 ||
+            std::abs(module.call_get_time() - (step + 1) * dt) > 1.e-10) {
             throw std::runtime_error("FMB timestep bookkeeping mismatch");
         }
     }

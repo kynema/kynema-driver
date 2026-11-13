@@ -290,7 +290,7 @@ int run(int argc, char** argv, int size, int rank)
                 if (!output) throw std::runtime_error("Cannot write UGF YAML");
                 output << config;
             }
-            sim.register_solver<driver::KynemaUGF>(
+            sim.register_module<driver::KynemaUGF>(
                 static_cast<int>(i + 1), ugf_comms[i], config, logfile,
                 node["ugf_vars"]
                     ? node["ugf_vars"].as<std::vector<std::string>>()
@@ -307,20 +307,20 @@ int run(int argc, char** argv, int size, int rank)
                 node["sgf_node_vars"]
                     ? node["sgf_node_vars"].as<std::vector<std::string>>()
                     : std::vector<std::string>{};
-            sim.register_solver<driver::KynemaSGF>(
+            sim.register_module<driver::KynemaSGF>(
                 cvars, nvars, ugf.size() > 0);
         }
 #endif
 #ifdef KYNEMA_DRIVER_ENABLE_FMB
         for (size_t i = 0; i < fmb.size(); ++i)
             if (fmb_comms[i] != MPI_COMM_NULL)
-                sim.register_solver_no_tioga<driver::KynemaFMB>(
+                sim.register_module_no_tioga<driver::KynemaFMB>(
                     YAML::LoadFile(fmb[i].as<std::string>()), fmb_comms[i],
                     static_cast<int>(i + 1));
 #endif
         sim.initialize();
         sim.run_timesteps(picard, nonlinear, steps, max_time);
-        sim.delete_solvers();
+        sim.delete_modules();
     }
 #ifdef KYNEMA_DRIVER_ENABLE_SGF
     if (sgf_comm != MPI_COMM_NULL) driver::KynemaSGF::finalize();

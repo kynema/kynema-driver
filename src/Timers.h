@@ -91,18 +91,18 @@ struct Timers
     }
 
     std::string get_timings_summary(
-        std::string solver, int step, MPI_Comm comm, int root = 0)
+        std::string module, int step, MPI_Comm comm, int root = 0)
     {
         double total_min, total_avg, total_max;
         total_times(total_min, total_avg, total_max, comm, root);
 
         std::ostringstream total_time_out = get_line_output(
-            solver, step, "Total", total_min, total_avg, total_max);
+            module, step, "Total", total_min, total_avg, total_max);
         return total_time_out.str();
     };
 
     std::string get_timings_detail(
-        std::string solver, int step, MPI_Comm comm, int root = 0)
+        std::string module, int step, MPI_Comm comm, int root = 0)
     {
         std::vector<double> mintimes(m_timers.size(), 0.0);
         std::vector<double> avgtimes(m_timers.size(), 0.0);
@@ -116,7 +116,7 @@ struct Timers
                 (m_timers.size() == 1) ? "Total" : m_names.at(i);
 
             linestream = get_line_output(
-                solver, step, func_call, mintimes.at(i), avgtimes.at(i),
+                module, step, func_call, mintimes.at(i), avgtimes.at(i),
                 maxtimes.at(i));
 
             outstream << linestream.str();
@@ -131,7 +131,7 @@ struct Timers
 
             outstream << std::endl;
             linestream = get_line_output(
-                solver, step, "Total", total_min, total_avg, total_max);
+                module, step, "Total", total_min, total_avg, total_max);
             outstream << linestream.str();
         }
 
@@ -181,7 +181,7 @@ struct Timers
     }
 
     std::ostringstream get_line_output(
-        std::string solver,
+        std::string module,
         int step,
         std::string func_call,
         double min,
@@ -196,7 +196,7 @@ struct Timers
         const int num_precision = 4;
 
         outstream << std::left << std::setw(name_width)
-                  << std::setfill(separator) << solver + "::" + func_call
+                  << std::setfill(separator) << module + "::" + func_call
                   << std::setw(num_width) << std::setfill(separator)
                   << std::fixed << std::setprecision(num_precision)
                   << std::right << step << std::setw(num_width)

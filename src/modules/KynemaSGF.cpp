@@ -64,9 +64,9 @@ void KynemaSGF::init_prolog(bool)
 
 void KynemaSGF::init_epilog() {}
 
-void KynemaSGF::prepare_solver_prolog() {}
+void KynemaSGF::prepare_module_prolog() {}
 
-void KynemaSGF::prepare_solver_epilog()
+void KynemaSGF::prepare_module_epilog()
 {
     m_incflo.prepare_for_time_integration();
 }

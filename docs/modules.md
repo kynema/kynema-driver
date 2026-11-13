@@ -2,6 +2,9 @@
 
 The driver coordinator is `driver::Simulation` in `src/Simulation.h`.
 The shared module interface is `driver::Module` in `src/Module.h`.
+Register modules through `register_module()` (Tioga adapters) or
+`register_module_no_tioga()` (native FMB). Initialization hooks use
+`prepare_module_prolog()` and `prepare_module_epilog()`.
 Every module implements `reset_states()`, called before advancing subsequent
 nonlinear iterations. SGF and UGF currently keep their existing state handling
 and implement this hook as a no-op.

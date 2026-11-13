@@ -12,13 +12,13 @@ public:
     explicit Module() : m_timers(m_names) {};
     virtual ~Module() = default;
 
-    void call_init_prolog(bool multi_solver_mode = true)
+    void call_init_prolog(bool multi_module_mode = true)
     {
-        init_prolog(multi_solver_mode);
+        init_prolog(multi_module_mode);
     };
     void call_init_epilog() { init_epilog(); };
-    void call_prepare_solver_prolog() { prepare_solver_prolog(); };
-    void call_prepare_solver_epilog() { prepare_solver_epilog(); };
+    void call_prepare_module_prolog() { prepare_module_prolog(); };
+    void call_prepare_module_epilog() { prepare_module_epilog(); };
     double call_get_time()
     {
         const std::string name = "Pre";
@@ -146,10 +146,10 @@ public:
     Timers m_timers;
 
 protected:
-    virtual void init_prolog(bool multi_solver_mode = true) = 0;
+    virtual void init_prolog(bool multi_module_mode = true) = 0;
     virtual void init_epilog() = 0;
-    virtual void prepare_solver_prolog() = 0;
-    virtual void prepare_solver_epilog() = 0;
+    virtual void prepare_module_prolog() = 0;
+    virtual void prepare_module_epilog() = 0;
     virtual double get_time() = 0;
     virtual double get_timestep_size() = 0;
     virtual void set_timestep_size(const double) = 0;

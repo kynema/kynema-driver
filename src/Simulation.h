@@ -17,18 +17,18 @@ class Simulation
 private:
     //! World communicator instance
     MPI_Comm m_comm;
-    //! List of solvers active in this overset simulation
-    std::vector<std::unique_ptr<Module>> m_solvers;
-    //! Flag indicating whether an AMR solver is active
+    //! List of modules active in this overset simulation
+    std::vector<std::unique_ptr<Module>> m_modules;
+    //! Flag indicating whether an AMR module is active
     bool m_has_amr{false};
-    //! Flag indicating whether an unstructured solver is active
+    //! Flag indicating whether an unstructured module is active
     bool m_has_unstructured{false};
     bool m_use_overset{false};
     //! Interval for overset updates during timestepping
     int m_overset_update_interval{100000000};
     //! Last timestep run during this simulation
     int m_last_timestep{0};
-    //! Flag indicating whether all solvers use fixed dt. If any solver uses
+    //! Flag indicating whether all modules use fixed dt. If any module uses
     //! adaptive dt, then this flag will be false
     bool m_fixed_dt{true};
     //! Flag indicating whether initialization tasks have been performed
@@ -41,8 +41,8 @@ private:
     int m_num_composite_bodies{0};
     //! Tioga instance
     TIOGA::tioga m_tg;
-    //! Determine unstructured and structured solver types
-    void check_solver_types();
+    //! Determine unstructured and structured module types
+    void check_module_types();
     //! Determine if we should update connectivity during time integration
     void determine_overset_interval();
     //! Return True if connectivity must be updated at a given timestep
@@ -60,39 +60,39 @@ public:
     Simulation(MPI_Comm comm);
     ~Simulation();
 
-    //! Register a solver (legacy - passes Tioga instance)
+    //! Register a module (legacy - passes Tioga instance)
     template <class ModuleType, class... Args>
-    void register_solver(Args... args)
+    void register_module(Args... args)
     {
-        m_solvers.emplace_back(
+        m_modules.emplace_back(
             std::make_unique<ModuleType>(std::forward<Args>(args)..., m_tg));
     }
 
-    //! Register a solver without Tioga (for standalone solvers like FMB)
+    //! Register a module without Tioga (for standalone modules like FMB)
     template <class ModuleType, class... Args>
-    ModuleType& register_solver_no_tioga(Args... args)
+    ModuleType& register_module_no_tioga(Args... args)
     {
-        auto solver = std::make_unique<ModuleType>(std::forward<Args>(args)...);
-        auto& result = *solver;
-        m_solvers.emplace_back(std::move(solver));
+        auto module = std::make_unique<ModuleType>(std::forward<Args>(args)...);
+        auto& result = *module;
+        m_modules.emplace_back(std::move(module));
         return result;
     }
 
-    //! Delete solvers
-    void delete_solvers()
+    //! Delete modules
+    void delete_modules()
     {
-        for (auto& ss : m_solvers) {
-            ss.reset();
+        for (auto& module : m_modules) {
+            module.reset();
         }
     }
 
-    //! Initialize all solvers
+    //! Initialize all modules
     void initialize();
 
     //! Determine field, fringe, hole information
     void perform_overset_connectivity();
 
-    //! Exchange solution between solvers
+    //! Exchange solution between modules
     void exchange_solution(const bool increment_time = false);
 
     //! Run prescribed number of timesteps
