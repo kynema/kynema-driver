@@ -3,6 +3,7 @@
 #include "Timers.h"
 #include <algorithm>
 #include <fstream>
+#include <limits>
 
 namespace driver {
 
@@ -15,7 +16,7 @@ OversetSimulation::OversetSimulation(MPI_Comm comm)
     int psize, prank;
     MPI_Comm_size(m_comm, &psize);
     MPI_Comm_rank(m_comm, &prank);
-    m_tg.setCommunicator(MPI_COMM_WORLD, prank, psize);
+    m_tg.setCommunicator(m_comm, prank, psize);
     m_printer.reset();
 }
 
@@ -55,13 +56,23 @@ void OversetSimulation::determine_overset_interval()
 void OversetSimulation::initialize()
 {
     check_solver_types();
-    if (m_has_amr && !m_has_unstructured) {
-        throw std::runtime_error(
-            "OversetSimulationulation requires at least one unstructured "
-            "solver");
+    int local_solvers = 0;
+    int local_cfd_solvers = 0;
+    for (auto& ss : m_solvers) {
+        int rank = 0;
+        MPI_Comm_rank(ss->comm(), &rank);
+        if (rank == 0) {
+            ++local_solvers;
+            if (ss->is_amr() || ss->is_unstructured()) ++local_cfd_solvers;
+        }
     }
+    int global_solvers = 0, global_cfd_solvers = 0;
+    MPI_Allreduce(&local_solvers, &global_solvers, 1, MPI_INT, MPI_SUM, m_comm);
+    MPI_Allreduce(&local_cfd_solvers, &global_cfd_solvers, 1, MPI_INT, MPI_SUM, m_comm);
+    if (global_solvers == 0) throw std::runtime_error("No solvers registered");
+    m_use_overset = global_cfd_solvers > 1;
 
-    for (auto& ss : m_solvers) ss->call_init_prolog(true);
+    for (auto& ss : m_solvers) ss->call_init_prolog(m_use_overset);
 
     determine_overset_interval();
 
@@ -75,12 +86,18 @@ void OversetSimulation::initialize()
 
     for (auto& ss : m_solvers) ss->call_prepare_solver_epilog();
 
-    if (!(std::all_of(m_solvers.begin() + 1, m_solvers.end(), [&](auto& ss) {
-            return ss->time_index() == m_solvers.at(0)->time_index();
-        }))) {
+    int min_step = std::numeric_limits<int>::max();
+    int max_step = std::numeric_limits<int>::min();
+    for (auto& ss : m_solvers) {
+        min_step = std::min(min_step, ss->time_index());
+        max_step = std::max(max_step, ss->time_index());
+    }
+    MPI_Allreduce(MPI_IN_PLACE, &min_step, 1, MPI_INT, MPI_MIN, m_comm);
+    MPI_Allreduce(MPI_IN_PLACE, &max_step, 1, MPI_INT, MPI_MAX, m_comm);
+    if (min_step != max_step) {
         throw std::runtime_error("Mismatch in solver time steps.");
     }
-    m_last_timestep = m_solvers.at(0)->time_index();
+    m_last_timestep = min_step;
 
     // Determine if any of the solvers have adaptive timestepping
     for (auto& ss : m_solvers) {
@@ -93,7 +110,7 @@ void OversetSimulation::initialize()
 
 void OversetSimulation::perform_overset_connectivity()
 {
-    if (!m_has_amr && !m_has_unstructured) return;
+    if (!m_use_overset) return;
     for (auto& ss : m_solvers) ss->call_pre_overset_conn_work();
 
     m_timers_tg.tick("Connectivity");
@@ -114,10 +131,9 @@ void OversetSimulation::perform_overset_connectivity()
 
 void OversetSimulation::exchange_solution(bool increment_time)
 {
-    if (!m_has_amr && !m_has_unstructured) return;
-
     // SGF and UGF need their second pre-advance stage after connectivity.
     for (auto& ss : m_solvers) ss->call_prepare_solution_exchange();
+    if (!m_use_overset) return;
     for (auto& ss : m_solvers) ss->call_register_solution();
 
     m_timers_tg.tick("SolExchange", increment_time);
@@ -127,7 +143,10 @@ void OversetSimulation::exchange_solution(bool increment_time)
         const int row_major = 0;
         // assuming this pathway is kynema-ugf only and all instances have same
         // number of field components
-        const int ncomps = m_solvers[0]->get_ncomps();
+        int ncomps = 0;
+        for (auto& ss : m_solvers)
+            if (ss->is_unstructured()) ncomps = std::max(ncomps, ss->get_ncomps());
+        MPI_Allreduce(MPI_IN_PLACE, &ncomps, 1, MPI_INT, MPI_MAX, m_comm);
         m_tg.dataUpdate(ncomps, row_major);
     }
     m_timers_tg.tock("SolExchange");
@@ -153,7 +172,13 @@ void OversetSimulation::run_timesteps(
         std::to_string(tstart));
 
     int nt = tstart;
-    double time = max_time < 0. ? 0. : m_solvers[0]->call_get_time();
+    auto current_time = [&]() {
+        double result = std::numeric_limits<double>::max();
+        for (auto& ss : m_solvers) result = std::min(result, ss->call_get_time());
+        MPI_Allreduce(MPI_IN_PLACE, &result, 1, MPI_DOUBLE, MPI_MIN, m_comm);
+        return result;
+    };
+    double time = max_time < 0. ? 0. : current_time();
     bool step_check = nsteps > 0 ? nt < tend : true;
     bool time_check = max_time > 0. ? time < max_time : true;
     bool do_step = step_check && time_check;
@@ -222,7 +247,7 @@ void OversetSimulation::run_timesteps(
         mem_usage_all(nt);
 
         ++nt;
-        if (max_time > 0.) time = m_solvers[0]->call_get_time();
+        if (max_time > 0.) time = current_time();
         step_check = nsteps > 0 ? nt < tend : true;
         time_check = max_time > 0. ? time < max_time : true;
         do_step = step_check && time_check;
@@ -260,8 +285,6 @@ void OversetSimulation::print_timing(const int nt)
 
     // cfd solver-specific timing
     for (auto& ss : m_solvers) {
-        MPI_Barrier(m_comm);
-
         ParallelPrinter printer(ss->comm());
 
         // summary timings

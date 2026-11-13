@@ -1,36 +1,33 @@
 target_sources(${KYNEMA_DRIVER_LIB_NAME} PRIVATE
-  SGFTiogaIface.cpp
-  SGFTiogaIface.h
-  KynemaSGF.cpp
-  KynemaSGF.h
   KynemaSolver.h
   KynemaSolver.cpp
   MPIUtilities.h
-  KynemaUGF.cpp
-  KynemaUGF.h
   OversetSimulation.cpp
   OversetSimulation.h
   ParallelPrinter.h
   MemoryUsage.h
   MemoryUsage.cpp)
 
-if(KynemaFMB_FOUND)
+if(KYNEMA_DRIVER_ENABLE_FMB)
   target_sources(${KYNEMA_DRIVER_LIB_NAME} PRIVATE KynemaFMB.cpp KynemaFMB.h)
+  target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC KynemaFMB::kynema_fmb_library)
+  target_compile_definitions(${KYNEMA_DRIVER_LIB_NAME} PUBLIC KYNEMA_DRIVER_ENABLE_FMB)
+endif()
+if(KYNEMA_DRIVER_ENABLE_SGF)
+  target_sources(${KYNEMA_DRIVER_LIB_NAME} PRIVATE SGFTiogaIface.cpp SGFTiogaIface.h KynemaSGF.cpp KynemaSGF.h)
+  target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC Kynema-SGF::kynema_sgf_api Kynema-SGF::buildInfokynema_sgf_obj AMReX::amrex)
+  target_compile_definitions(${KYNEMA_DRIVER_LIB_NAME} PUBLIC KYNEMA_DRIVER_ENABLE_SGF)
+endif()
+if(KYNEMA_DRIVER_ENABLE_UGF)
+  target_sources(${KYNEMA_DRIVER_LIB_NAME} PRIVATE KynemaUGF.cpp KynemaUGF.h)
+  target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC Kynema-UGF::kynema_ugf_lib)
+  target_compile_definitions(${KYNEMA_DRIVER_LIB_NAME} PUBLIC KYNEMA_DRIVER_ENABLE_UGF)
 endif()
 
 target_include_directories(${KYNEMA_DRIVER_LIB_NAME} PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC
-  Kynema-SGF::kynema_sgf_api
-  Kynema-SGF::buildInfokynema_sgf_obj
-  AMReX::amrex
-  Kynema-UGF::kynema_ugf_lib)
-
-# Optional FMB support
-if(KynemaFMB_FOUND)
-  target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC KynemaFMB::kynema_fmb_library)
-endif()
+target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC yaml-cpp tioga)
 
 target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC $<$<BOOL:${MPI_CXX_FOUND}>:MPI::MPI_CXX>)
 target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC $<$<BOOL:${MPI_Fortran_FOUND}>:MPI::MPI_Fortran>)

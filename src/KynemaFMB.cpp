@@ -8,8 +8,9 @@
 
 namespace driver {
 
-KynemaFMB::KynemaFMB(const YAML::Node& fmb_config, MPI_Comm comm)
+KynemaFMB::KynemaFMB(const YAML::Node& fmb_config, MPI_Comm comm, int id)
     : m_comm(comm)
+    , m_id(id)
     , m_fmb_config(fmb_config)
 {
     MPI_Comm_rank(m_comm, &m_prank);

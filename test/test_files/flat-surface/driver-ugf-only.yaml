@@ -1,0 +1,4 @@
+kynema_driver:
+  kynema_ugf_inp: [flat-surface-ugf.yaml]
+  ugf_vars: [volume_of_fluid, velocity, density, pressure]
+  num_timesteps: 1

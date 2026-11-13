@@ -1,0 +1,3 @@
+kynema_driver:
+  kynema_fmb_inp: fmb-6dof-modular.yaml
+  max_time: 0.25

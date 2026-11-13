@@ -43,6 +43,7 @@ void KynemaSGF::finalize() { amrex::Finalize(); }
 KynemaSGF::KynemaSGF(
     const std::vector<std::string>& cell_vars,
     const std::vector<std::string>& node_vars,
+    bool overset,
     TIOGA::tioga& tg)
     : m_incflo()
     , m_tgiface(m_incflo.sim(), tg)
@@ -50,7 +51,7 @@ KynemaSGF::KynemaSGF(
     , m_node_vars(node_vars)
     , m_comm(amrex::ParallelContext::CommunicatorSub())
 {
-    m_incflo.sim().activate_overset();
+    if (overset) m_incflo.sim().activate_overset();
 }
 
 KynemaSGF::~KynemaSGF() = default;

@@ -19,13 +19,11 @@ private:
     MPI_Comm m_comm;
     //! List of solvers active in this overset simulation
     std::vector<std::unique_ptr<KynemaSolver>> m_solvers;
-    //! List of start ranks for all kynema-ugf instances
-    int m_num_ugf_solvers;
-    std::vector<int> m_ugf_start_rank;
     //! Flag indicating whether an AMR solver is active
     bool m_has_amr{false};
     //! Flag indicating whether an unstructured solver is active
     bool m_has_unstructured{false};
+    bool m_use_overset{false};
     //! Interval for overset updates during timestepping
     int m_overset_update_interval{100000000};
     //! Last timestep run during this simulation
@@ -112,17 +110,6 @@ public:
 
     //! track memory usage and print to file
     long mem_usage_all(const int step);
-
-    //! set number of kynema-ugf instances
-    void set_ugf_start_rank(const std::vector<int>& start_ranks)
-    {
-        if (!start_ranks.empty()) {
-            m_ugf_start_rank = start_ranks;
-        } else {
-            m_ugf_start_rank.clear();
-        }
-        m_num_ugf_solvers = m_ugf_start_rank.size();
-    }
 
     void set_holemap_alg(bool alg)
     {

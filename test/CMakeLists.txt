@@ -102,6 +102,7 @@ endfunction(add_test_rd)
 #=============================================================================
 # Regression tests
 #=============================================================================
+if(KYNEMA_DRIVER_ENABLE_SGF AND KYNEMA_DRIVER_ENABLE_UGF)
 add_test_r(sphere 848.42)
 add_test_r(sgf-ugf-cylinder 332.08)
 add_test_r(sgf-ugf-cylinder-motion 393.82)
@@ -113,14 +114,69 @@ add_test_r(linear-waves 528.14)
 add_test_r(dam-break-block 289.58)
 add_test_r(abl-bndry-output 284.95)
 add_test_rd(abl-bndry-input abl-bndry-output 122.83)
+add_test_re(stokes-waves-cylinder 781.64)
+endif()
+
+if(KYNEMA_DRIVER_ENABLE_UGF)
 add_test_r(ugf-ugf-cylinder 430.98)
 add_test_r(ugf-ugf-cylinder-motion 483.16)
-add_test_re(stokes-waves-cylinder 781.64)
+endif()
+if(KYNEMA_DRIVER_ENABLE_SGF OR KYNEMA_DRIVER_ENABLE_UGF)
+  set(TEST_NAME flat-surface)
+  setup_test()
+  if(NOT KYNEMA_DRIVER_ENABLE_FMB AND KYNEMA_DRIVER_ENABLE_SGF)
+    add_test(NAME cli-disabled-fmb
+      COMMAND $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> driver-sgf-fmb.yaml)
+    set_tests_properties(cli-disabled-fmb PROPERTIES
+      WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS regression
+      WILL_FAIL TRUE TIMEOUT 90 RUN_SERIAL TRUE)
+  endif()
+  if(KYNEMA_DRIVER_ENABLE_SGF)
+    add_test(NAME sgf-cli-single
+      COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS}
+        $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> ${MPIEXEC_POSTFLAGS}
+        --sgf 2 driver-sgf-only.yaml)
+    set_tests_properties(sgf-cli-single PROPERTIES WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS regression TIMEOUT 90 RUN_SERIAL TRUE)
+  endif()
+  if(KYNEMA_DRIVER_ENABLE_UGF)
+    add_test(NAME ugf-cli-single
+      COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS}
+        $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> ${MPIEXEC_POSTFLAGS}
+        --ugf 2 driver-ugf-only.yaml)
+    set_tests_properties(ugf-cli-single PROPERTIES WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS regression TIMEOUT 90 RUN_SERIAL TRUE)
+  endif()
+  if(KYNEMA_DRIVER_ENABLE_FMB AND KYNEMA_DRIVER_ENABLE_SGF)
+    add_test(NAME sgf-fmb-cli
+      COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS}
+        $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> ${MPIEXEC_POSTFLAGS}
+        --sgf 2 --fmb 1 driver-sgf-fmb.yaml)
+    set_tests_properties(sgf-fmb-cli PROPERTIES WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS regression TIMEOUT 90 RUN_SERIAL TRUE)
+  endif()
+  if(KYNEMA_DRIVER_ENABLE_FMB AND KYNEMA_DRIVER_ENABLE_UGF)
+    add_test(NAME ugf-fmb-cli
+      COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS}
+        $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> ${MPIEXEC_POSTFLAGS}
+        --ugf 2 --fmb 1 driver-ugf-fmb.yaml)
+    set_tests_properties(ugf-fmb-cli PROPERTIES WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS regression TIMEOUT 90 RUN_SERIAL TRUE)
+  endif()
+  if(KYNEMA_DRIVER_ENABLE_FMB AND KYNEMA_DRIVER_ENABLE_UGF AND KYNEMA_DRIVER_ENABLE_SGF)
+    add_test(NAME all-modules-cli
+      COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS}
+        $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> ${MPIEXEC_POSTFLAGS}
+        --sgf 2 --ugf 2 --fmb 1 driver-all.yaml)
+    set_tests_properties(all-modules-cli PROPERTIES WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS regression TIMEOUT 90 RUN_SERIAL TRUE)
+    add_test(NAME partitioned-modules-cli
+      COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS}
+        $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> ${MPIEXEC_POSTFLAGS}
+        --sgf 1 --ugf 1 --fmb 1 driver-all.yaml)
+    set_tests_properties(partitioned-modules-cli PROPERTIES WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS regression TIMEOUT 90 RUN_SERIAL TRUE)
+  endif()
+endif()
 
-if(KYNEMA_UGF_USES_KYNEMA_FMB)
+if(KYNEMA_DRIVER_ENABLE_SGF AND KYNEMA_DRIVER_ENABLE_UGF AND KYNEMA_UGF_USES_KYNEMA_FMB)
   add_test_r(floating-block)
 endif()
-if(KynemaFMB_FOUND)
+if(KYNEMA_DRIVER_ENABLE_FMB)
   set(TEST_NAME fmb-6dof-modular)
   setup_test()
   add_executable(fmb-6dof-modular-test
@@ -132,4 +188,30 @@ if(KynemaFMB_FOUND)
   set_tests_properties(fmb-6dof-modular PROPERTIES
     WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}"
     LABELS "regression")
+  add_test(NAME fmb-cli-single
+    COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS}
+      $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> ${MPIEXEC_POSTFLAGS}
+      --fmb 1 driver-fmb.yaml)
+  add_test(NAME fmb-cli-multiple
+    COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 3 ${MPIEXEC_PREFLAGS}
+      $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> ${MPIEXEC_POSTFLAGS}
+      --fmb 2 driver-fmb-multiple.yaml)
+  add_test(NAME fmb-cli-max-time
+    COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS}
+      $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> ${MPIEXEC_POSTFLAGS}
+      --fmb 1 driver-fmb-max-time.yaml)
+  set_tests_properties(fmb-cli-max-time PROPERTIES
+    PASS_REGULAR_EXPRESSION "KynemaFMB final time: 0.25 seconds")
+  add_test(NAME cli-no-modules
+    COMMAND $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> driver-no-modules.yaml)
+  add_test(NAME cli-invalid-ranks
+    COMMAND $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> --fmb 0 driver-fmb.yaml)
+  add_test(NAME cli-missing-instances
+    COMMAND $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> driver-fmb-multiple.yaml)
+  set_tests_properties(cli-no-modules cli-invalid-ranks cli-missing-instances
+    PROPERTIES WILL_FAIL TRUE)
+  set_tests_properties(fmb-cli-single fmb-cli-multiple fmb-cli-max-time
+    cli-no-modules cli-invalid-ranks cli-missing-instances PROPERTIES
+    WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS "regression"
+    TIMEOUT 90 RUN_SERIAL TRUE)
 endif()

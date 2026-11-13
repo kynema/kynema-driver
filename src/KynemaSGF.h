@@ -24,6 +24,7 @@ public:
     explicit KynemaSGF(
         const std::vector<std::string>&,
         const std::vector<std::string>&,
+        bool,
         TIOGA::tioga&);
     ~KynemaSGF();
     bool is_unstructured() override { return false; }

@@ -28,7 +28,7 @@ public:
      * @param fmb_config YAML node containing FMB configuration
      * @param comm MPI communicator for the solver
      */
-    explicit KynemaFMB(const YAML::Node& fmb_config, MPI_Comm comm);
+    explicit KynemaFMB(const YAML::Node& fmb_config, MPI_Comm comm, int id = 1);
 
     ~KynemaFMB() override;
 
@@ -62,11 +62,12 @@ public:
     // Query methods
     bool is_fixed_timestep_size() override;
     int time_index() override;
-    std::string identifier() override { return "KynemaFMB"; }
+    std::string identifier() override { return "KynemaFMB-" + std::to_string(m_id); }
     MPI_Comm comm() override { return m_comm; }
 
 private:
     MPI_Comm m_comm;
+    int m_id;
     int m_prank{0};
 
     // FMB state
