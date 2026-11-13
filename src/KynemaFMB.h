@@ -4,6 +4,7 @@
 #include "KynemaSolver.h"
 #include "mpi.h"
 #include "yaml-cpp/yaml.h"
+#include <array>
 #include <memory>
 
 // Forward declaration to avoid circular dependencies
@@ -31,6 +32,10 @@ public:
 
     ~KynemaFMB() override;
 
+    void set_forces(const std::vector<std::array<double, 6>>& forces);
+    std::array<double, 7> node_position(size_t node) const;
+    size_t num_nodes() const { return m_num_nodes; }
+
     // Initialization methods (from base class)
     void init_prolog(bool multi_solver_mode = true) override;
     void init_epilog() override;
@@ -43,16 +48,11 @@ public:
     void advance_states(size_t inonlin) override;
     void calculate_outputs(size_t inonlin) override;
 
-    // Legacy interface methods (for compatibility, may not all be used)
-    void pre_advance_stage0(size_t inonlin) override;
-    void pre_advance_stage1(size_t inonlin) override;
-    void pre_advance_stage2(size_t inonlin) override;
     double get_time() override;
     double get_timestep_size() override;
     void set_timestep_size(const double dt) override;
-    void advance_timestep(size_t inonlin) override;
     void additional_picard_iterations(const int n) override;
-    void post_advance() override;
+    void finalize_time_step() override;
     void pre_overset_conn_work() override;
     void post_overset_conn_work() override;
     void register_solution() override;
@@ -68,7 +68,6 @@ public:
 private:
     MPI_Comm m_comm;
     int m_prank{0};
-    int m_psize{1};
 
     // FMB state
     std::unique_ptr<kynema_fmb::interfaces::GeneralStructureInterface> m_fmb_interface;
@@ -78,8 +77,8 @@ private:
     int m_time_step{0};
     bool m_initialized{false};
 
-    // Workspace for force coupling
-    std::vector<std::vector<double>> m_forces_buffer;
+    size_t m_num_nodes{0};
+    std::vector<std::array<double, 6>> m_forces;
 };
 
 } // namespace driver

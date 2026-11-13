@@ -23,6 +23,8 @@ private:
     std::vector<std::string> m_fnames;
     int m_ncomps;
     int m_id;
+    bool m_stage2_pending{false};
+    size_t m_stage2_iteration{0};
 
 public:
     static void initialize();
@@ -65,17 +67,18 @@ protected:
     void init_epilog() override;
     void prepare_solver_prolog() override;
     void prepare_solver_epilog() override;
-    void pre_advance_stage0(size_t inonlin) override;
-    void pre_advance_stage1(size_t inonlin) override;
-    void pre_advance_stage2(size_t inonlin) override;
+    void set_inputs(size_t inonlin) override;
+    void predict_inputs(size_t inonlin) override;
+    void advance_states(size_t inonlin) override;
+    void calculate_outputs(size_t) override {}
     double get_time() override;
     double get_timestep_size() override;
     void set_timestep_size(const double) override;
-    void advance_timestep(size_t inonlin) override;
     void additional_picard_iterations(const int) override;
-    void post_advance() override;
+    void finalize_time_step() override;
     void pre_overset_conn_work() override;
     void post_overset_conn_work() override;
+    void prepare_solution_exchange() override;
     void register_solution() override;
     void update_solution() override;
     void dump_simulation_time() override;

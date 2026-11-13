@@ -72,10 +72,12 @@ public:
 
     //! Register a solver without Tioga (for standalone solvers like FMB)
     template <class Solver, class... Args>
-    void register_solver_no_tioga(Args... args)
+    Solver& register_solver_no_tioga(Args... args)
     {
-        m_solvers.emplace_back(
-            std::make_unique<Solver>(std::forward<Args>(args)...));
+        auto solver = std::make_unique<Solver>(std::forward<Args>(args)...);
+        auto& result = *solver;
+        m_solvers.emplace_back(std::move(solver));
+        return result;
     }
 
     //! Delete solvers

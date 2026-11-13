@@ -19,27 +19,6 @@ public:
     void call_init_epilog() { init_epilog(); };
     void call_prepare_solver_prolog() { prepare_solver_prolog(); };
     void call_prepare_solver_epilog() { prepare_solver_epilog(); };
-    void call_pre_advance_stage0(size_t inonlin, const bool increment)
-    {
-        const std::string name = "Pre";
-        m_timers.tick(name, increment);
-        pre_advance_stage0(inonlin);
-        m_timers.tock(name);
-    }
-    void call_pre_advance_stage1(size_t inonlin, const bool increment)
-    {
-        const std::string name = "Pre";
-        m_timers.tick(name, increment);
-        pre_advance_stage1(inonlin);
-        m_timers.tock(name);
-    };
-    void call_pre_advance_stage2(size_t inonlin, const bool increment)
-    {
-        const std::string name = "Pre";
-        m_timers.tick(name, increment);
-        pre_advance_stage2(inonlin);
-        m_timers.tock(name);
-    };
     double call_get_time()
     {
         const std::string name = "Pre";
@@ -63,13 +42,6 @@ public:
         set_timestep_size(dt);
         m_timers.tock(name);
     };
-    void call_advance_timestep(size_t inonlin, const bool increment)
-    {
-        const std::string name = "Solve";
-        m_timers.tick(name, increment);
-        advance_timestep(inonlin);
-        m_timers.tock(name);
-    };
     void call_additional_picard_iterations(const int n)
     {
         std::string name = "AdditionalPicardIterations";
@@ -81,11 +53,11 @@ public:
         additional_picard_iterations(n);
         m_timers.tock(name);
     };
-    void call_post_advance()
+    void call_finalize_time_step()
     {
         const std::string name = "Post";
         m_timers.tick(name);
-        post_advance();
+        finalize_time_step();
         m_timers.tock(name);
     };
     void call_pre_overset_conn_work()
@@ -109,6 +81,7 @@ public:
         register_solution();
         m_timers.tock(name);
     };
+    void call_prepare_solution_exchange() { prepare_solution_exchange(); }
     void call_update_solution()
     {
         const std::string name = "Update";
@@ -119,8 +92,6 @@ public:
 
     void call_dump_simulation_time() { dump_simulation_time(); };
 
-    // ========== New modular solver interface ==========
-    // These methods define the timestepping behavior within the nonlinear iteration loop
     void call_set_inputs(size_t inonlin, const bool increment)
     {
         const std::string name = "SetInputs";
@@ -149,7 +120,6 @@ public:
         calculate_outputs(inonlin);
         m_timers.tock(name);
     }
-    // ===================================================
 
     virtual bool is_unstructured() { return false; };
     virtual bool is_amr() { return false; };
@@ -162,7 +132,7 @@ public:
     void timing_details();
     //! Timer names
     std::vector<std::string> m_names{
-        "Pre", "PreConn", "PostConn", "Register", "Update", "Solve", "Post",
+        "Pre", "PreConn", "PostConn", "Register", "Update", "Post",
         "SetInputs", "PredictInputs", "AdvanceStates", "CalculateOutputs"};
     //! Timers
     Timers m_timers;
@@ -172,47 +142,22 @@ protected:
     virtual void init_epilog() = 0;
     virtual void prepare_solver_prolog() = 0;
     virtual void prepare_solver_epilog() = 0;
-    virtual void pre_advance_stage0(size_t inonlin) = 0;
-    virtual void pre_advance_stage1(size_t inonlin) = 0;
-    virtual void pre_advance_stage2(size_t inonlin) = 0;
     virtual double get_time() = 0;
     virtual double get_timestep_size() = 0;
     virtual void set_timestep_size(const double) = 0;
-    virtual void advance_timestep(size_t inonlin) = 0;
     virtual void additional_picard_iterations(const int) = 0;
-    virtual void post_advance() = 0;
+    virtual void finalize_time_step() = 0;
     virtual void pre_overset_conn_work() = 0;
     virtual void post_overset_conn_work() = 0;
     virtual void register_solution() = 0;
+    virtual void prepare_solution_exchange() {}
     virtual void update_solution() = 0;
     virtual void dump_simulation_time() = 0;
 
-    // ========== New modular solver interface ==========
-    // These virtual methods define the modular timestepping behavior.
-    // Solvers can override these to implement the new modular interface.
-    // Default implementations are provided for backward compatibility.
-    virtual void set_inputs(size_t inonlin)
-    {
-        // Default: use existing pre_advance_stage0 behavior
-        pre_advance_stage0(inonlin);
-    }
-    virtual void predict_inputs(size_t inonlin)
-    {
-        // Default: use existing pre_advance_stage1 and pre_advance_stage2 behavior
-        pre_advance_stage1(inonlin);
-        pre_advance_stage2(inonlin);
-    }
-    virtual void advance_states(size_t inonlin)
-    {
-        // Default: use existing advance_timestep behavior
-        advance_timestep(inonlin);
-    }
-    virtual void calculate_outputs(size_t inonlin)
-    {
-        // Default: use existing post_advance behavior
-        post_advance();
-    }
-    // ===================================================
+    virtual void set_inputs(size_t inonlin) = 0;
+    virtual void predict_inputs(size_t inonlin) = 0;
+    virtual void advance_states(size_t inonlin) = 0;
+    virtual void calculate_outputs(size_t inonlin) = 0;
 };
 
 } // namespace driver

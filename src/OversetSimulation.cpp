@@ -55,7 +55,7 @@ void OversetSimulation::determine_overset_interval()
 void OversetSimulation::initialize()
 {
     check_solver_types();
-    if (!m_has_unstructured) {
+    if (m_has_amr && !m_has_unstructured) {
         throw std::runtime_error(
             "OversetSimulationulation requires at least one unstructured "
             "solver");
@@ -93,6 +93,7 @@ void OversetSimulation::initialize()
 
 void OversetSimulation::perform_overset_connectivity()
 {
+    if (!m_has_amr && !m_has_unstructured) return;
     for (auto& ss : m_solvers) ss->call_pre_overset_conn_work();
 
     m_timers_tg.tick("Connectivity");
@@ -113,7 +114,10 @@ void OversetSimulation::perform_overset_connectivity()
 
 void OversetSimulation::exchange_solution(bool increment_time)
 {
+    if (!m_has_amr && !m_has_unstructured) return;
 
+    // SGF and UGF need their second pre-advance stage after connectivity.
+    for (auto& ss : m_solvers) ss->call_prepare_solution_exchange();
     for (auto& ss : m_solvers) ss->call_register_solution();
 
     m_timers_tg.tick("SolExchange", increment_time);
@@ -163,9 +167,6 @@ void OversetSimulation::run_timesteps(
 
             bool increment_timer = inonlin > 0 ? true : false;
 
-            // ===== MODULAR SOLVER INTERFACE =====
-            // Each solver executes its modular operations in sequence:
-            // 1. set_inputs(): Initialize and set boundary/coupling inputs
             for (auto& ss : m_solvers) {
                 ss->call_set_inputs(inonlin, increment_timer);
             }
@@ -182,7 +183,6 @@ void OversetSimulation::run_timesteps(
                 for (auto& ss : m_solvers) ss->call_set_timestep_size(dt);
             }
 
-            // 2. predict_inputs(): Predict/extrapolate inputs for coupling
             for (auto& ss : m_solvers) {
                 ss->call_predict_inputs(inonlin, increment_timer);
             }
@@ -193,16 +193,13 @@ void OversetSimulation::run_timesteps(
             // Couple solvers via solution exchange (external to modules)
             exchange_solution(increment_timer);
 
-            // 3. advance_states(): Advance the solution one timestep
             for (auto& ss : m_solvers) {
                 ss->call_advance_states(inonlin, increment_timer);
             }
 
-            // 4. calculate_outputs(): Compute derived quantities and outputs
             for (auto& ss : m_solvers) {
                 ss->call_calculate_outputs(inonlin, increment_timer);
             }
-            // =====================================
         }
 
         if (add_pic_its > 0) {
@@ -210,6 +207,7 @@ void OversetSimulation::run_timesteps(
             for (auto& ss : m_solvers)
                 ss->call_additional_picard_iterations(add_pic_its);
         }
+        for (auto& ss : m_solvers) ss->call_finalize_time_step();
 
         MPI_Barrier(m_comm);
 
@@ -230,7 +228,7 @@ void OversetSimulation::run_timesteps(
         do_step = step_check && time_check;
     }
     for (auto& ss : m_solvers) ss->call_dump_simulation_time();
-    m_last_timestep = tend;
+    m_last_timestep = nt - 1;
 }
 
 bool OversetSimulation::do_connectivity(const int tstep)

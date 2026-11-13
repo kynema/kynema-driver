@@ -12,9 +12,11 @@ target_sources(${KYNEMA_DRIVER_LIB_NAME} PRIVATE
   OversetSimulation.h
   ParallelPrinter.h
   MemoryUsage.h
-  MemoryUsage.cpp
-  $<$<BOOL:${Kynema-FMB_FOUND}>:KynemaFMB.cpp>
-  $<$<BOOL:${Kynema-FMB_FOUND}>:KynemaFMB.h>)
+  MemoryUsage.cpp)
+
+if(KynemaFMB_FOUND)
+  target_sources(${KYNEMA_DRIVER_LIB_NAME} PRIVATE KynemaFMB.cpp KynemaFMB.h)
+endif()
 
 target_include_directories(${KYNEMA_DRIVER_LIB_NAME} PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR})
@@ -26,8 +28,8 @@ target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC
   Kynema-UGF::kynema_ugf_lib)
 
 # Optional FMB support
-if(Kynema-FMB_FOUND)
-  target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC Kynema-FMB::kynema_fmb_lib)
+if(KynemaFMB_FOUND)
+  target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC KynemaFMB::kynema_fmb_library)
 endif()
 
 target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC $<$<BOOL:${MPI_CXX_FOUND}>:MPI::MPI_CXX>)

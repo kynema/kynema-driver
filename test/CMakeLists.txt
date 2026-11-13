@@ -120,7 +120,16 @@ add_test_re(stokes-waves-cylinder 781.64)
 if(KYNEMA_UGF_USES_KYNEMA_FMB)
   add_test_r(floating-block)
 endif()
-# FMB modular solver test
-if(KYNEMA_FMB_FOUND)
-  add_test_r(fmb-6dof-modular)
+if(KynemaFMB_FOUND)
+  set(TEST_NAME fmb-6dof-modular)
+  setup_test()
+  add_executable(fmb-6dof-modular-test
+    test_files/fmb-6dof-modular/test_fmb_6dof.cpp)
+  target_link_libraries(fmb-6dof-modular-test PRIVATE ${KYNEMA_DRIVER_LIB_NAME})
+  add_test(NAME fmb-6dof-modular
+    COMMAND fmb-6dof-modular-test
+      "${CURRENT_TEST_BINARY_DIR}/fmb-6dof-modular.yaml")
+  set_tests_properties(fmb-6dof-modular PROPERTIES
+    WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}"
+    LABELS "regression")
 endif()

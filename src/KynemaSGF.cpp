@@ -70,7 +70,7 @@ void KynemaSGF::prepare_solver_epilog()
     m_incflo.prepare_for_time_integration();
 }
 
-void KynemaSGF::pre_advance_stage0(size_t inonlin)
+void KynemaSGF::set_inputs(size_t inonlin)
 {
     if (inonlin < 1) {
         m_incflo.sim().time().new_timestep();
@@ -79,16 +79,20 @@ void KynemaSGF::pre_advance_stage0(size_t inonlin)
     }
 }
 
-void KynemaSGF::pre_advance_stage1(size_t inonlin)
+void KynemaSGF::predict_inputs(size_t inonlin)
 {
     if (inonlin < 1) {
         m_incflo.pre_advance_stage1();
+        m_stage2_pending = true;
     }
 }
 
-void KynemaSGF::pre_advance_stage2(size_t inonlin)
+void KynemaSGF::prepare_solution_exchange()
 {
-    if (inonlin < 1) m_incflo.pre_advance_stage2();
+    if (m_stage2_pending) {
+        m_incflo.pre_advance_stage2();
+        m_stage2_pending = false;
+    }
 }
 
 double KynemaSGF::get_time() { return m_incflo.time().new_time(); }
@@ -105,12 +109,12 @@ bool KynemaSGF::is_fixed_timestep_size()
     return (!m_incflo.sim().time().adaptive_timestep());
 }
 
-void KynemaSGF::advance_timestep(size_t inonlin)
+void KynemaSGF::advance_states(size_t inonlin)
 {
     m_incflo.do_advance(inonlin);
 }
 
-void KynemaSGF::post_advance() { m_incflo.post_advance_work(); }
+void KynemaSGF::finalize_time_step() { m_incflo.post_advance_work(); }
 
 void KynemaSGF::pre_overset_conn_work() { m_tgiface.pre_overset_conn_work(); }
 

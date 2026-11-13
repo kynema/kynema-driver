@@ -1,6 +1,7 @@
 #include "KynemaFMB.h"
 #include "mpi.h"
 #include <iostream>
+#include <stdexcept>
 
 // Include FMB interface
 #include "interfaces/generalized/generalized_structure_interface.hpp"
@@ -12,27 +13,20 @@ KynemaFMB::KynemaFMB(const YAML::Node& fmb_config, MPI_Comm comm)
     , m_fmb_config(fmb_config)
 {
     MPI_Comm_rank(m_comm, &m_prank);
-    MPI_Comm_size(m_comm, &m_psize);
-
-    // Extract timestep if specified
-    if (fmb_config["time_step"]) {
-        m_dt = fmb_config["time_step"].as<double>();
-    }
-    if (fmb_config["start_time"]) {
-        m_time = fmb_config["start_time"].as<double>();
-    }
+    m_dt = fmb_config["simulation"]["step_size"].as<double>();
 }
 
 KynemaFMB::~KynemaFMB() = default;
 
-void KynemaFMB::init_prolog(bool multi_solver_mode)
+void KynemaFMB::init_prolog(bool)
 {
     // Create FMB interface if not already created
     if (!m_fmb_interface) {
         // FMB interface constructor requires just the YAML config
         // It will initialize the structural model
-        m_fmb_interface = std::make_unique<kynema_fmb::interfaces::GeneralStructureInterface>(
-            m_fmb_config);
+        m_fmb_interface =
+            std::make_unique<kynema_fmb::interfaces::GeneralStructureInterface>(
+                m_fmb_config);
     }
 }
 
@@ -41,6 +35,8 @@ void KynemaFMB::init_epilog()
     // Call FMB's initialize_module to finalize initialization
     if (m_fmb_interface && !m_initialized) {
         auto module_description = m_fmb_interface->initialize_module();
+        m_num_nodes = module_description["model"]["num_nodes"].as<size_t>();
+        m_forces.resize(m_num_nodes);
         m_initialized = true;
 
         if (m_prank == 0) {
@@ -59,60 +55,55 @@ void KynemaFMB::prepare_solver_epilog()
     // No special preparation needed for FMB
 }
 
+void KynemaFMB::set_forces(const std::vector<std::array<double, 6>>& forces)
+{
+    if (!m_initialized || forces.size() != m_num_nodes) {
+        throw std::invalid_argument(
+            "FMB forces must match the initialized node count");
+    }
+    m_forces = forces;
+}
+
+std::array<double, 7> KynemaFMB::node_position(size_t node) const
+{
+    if (!m_initialized || node >= m_num_nodes) {
+        throw std::out_of_range("Invalid FMB node");
+    }
+    const auto& x = m_fmb_interface->get_outputs().x;
+    std::array<double, 7> result;
+    for (size_t i = 0; i < result.size(); ++i) result[i] = x(node, i);
+    return result;
+}
+
 void KynemaFMB::set_inputs(size_t inonlin)
 {
-    // On first nonlinear iteration, receive updated forces from coupling
-    if (inonlin == 0 && m_fmb_interface) {
-        // Forces are set via receive_inputs()
-        // This is called after external coupling provides force data
+    // The first iteration uses predicted forces; subsequent iterations use
+    // the latest coupled forces.
+    if (inonlin == 0) return;
+    using Interface = kynema_fmb::interfaces::GeneralStructureInterface;
+    Interface::HostView<double* [6]> forces("forces", m_num_nodes);
+    for (size_t node = 0; node < m_num_nodes; ++node) {
+        for (size_t component = 0; component < 6; ++component) {
+            forces(node, component) = m_forces[node][component];
+        }
     }
+    m_fmb_interface->receive_inputs(forces);
 }
 
 void KynemaFMB::predict_inputs(size_t inonlin)
 {
-    if (!m_fmb_interface) return;
-
-    // Predict the inputs at the next time step
-    m_fmb_interface->predict_inputs();
+    if (inonlin == 0) m_fmb_interface->predict_inputs();
 }
 
 void KynemaFMB::advance_states(size_t inonlin)
 {
-    if (!m_fmb_interface) return;
-
-    // Solve the structural dynamics equations
+    if (inonlin > 0) m_fmb_interface->reset_states();
     m_fmb_interface->advance_states();
-
-    // Advance time tracking
-    m_time += m_dt;
-    m_time_step++;
 }
 
-void KynemaFMB::calculate_outputs(size_t inonlin)
+void KynemaFMB::calculate_outputs(size_t)
 {
-    if (!m_fmb_interface) return;
-
-    // Calculate outputs (forces, stresses, etc.)
     m_fmb_interface->calculate_outputs();
-}
-
-// ===== Legacy interface methods (for compatibility) =====
-
-void KynemaFMB::pre_advance_stage0(size_t inonlin)
-{
-    // Default: delegates to set_inputs via virtual methods
-    set_inputs(inonlin);
-}
-
-void KynemaFMB::pre_advance_stage1(size_t inonlin)
-{
-    // Default: delegates to predict_inputs via virtual methods
-    predict_inputs(inonlin);
-}
-
-void KynemaFMB::pre_advance_stage2(size_t inonlin)
-{
-    // For FMB, stage2 is empty (prediction already done in stage1)
 }
 
 double KynemaFMB::get_time()
@@ -127,19 +118,14 @@ double KynemaFMB::get_timestep_size()
 
 void KynemaFMB::set_timestep_size(const double dt)
 {
-    m_dt = dt;
-}
-
-void KynemaFMB::advance_timestep(size_t inonlin)
-{
-    // This is the old interface; new code uses advance_states()
-    advance_states(inonlin);
+    if (dt != m_dt) {
+        throw std::runtime_error(
+            "KynemaFMB requires its configured fixed timestep");
+    }
 }
 
 void KynemaFMB::additional_picard_iterations(const int n)
 {
-    if (!m_fmb_interface) return;
-
     // For additional Picard iterations, we need to:
     // 1. Reset to previous state
     // 2. Advance again (this is what the test case shows)
@@ -147,14 +133,14 @@ void KynemaFMB::additional_picard_iterations(const int n)
         m_fmb_interface->reset_states();
         m_fmb_interface->advance_states();
     }
+    m_fmb_interface->calculate_outputs();
 }
 
-void KynemaFMB::post_advance()
+void KynemaFMB::finalize_time_step()
 {
-    // This is called after timestep; for FMB we finalize
-    if (m_fmb_interface) {
-        m_fmb_interface->finalize_time_step();
-    }
+    m_fmb_interface->finalize_time_step();
+    m_time += m_dt;
+    ++m_time_step;
 }
 
 void KynemaFMB::pre_overset_conn_work()
