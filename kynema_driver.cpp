@@ -1,16 +1,16 @@
-#include "OversetSimulation.h"
-#include "MPIUtilities.h"
-#include "yaml-editor.h"
+#include "src/Simulation.h"
+#include "src/MPIUtilities.h"
+#include "src/yaml-editor.h"
 #include <yaml-cpp/yaml.h>
 
 #ifdef KYNEMA_DRIVER_ENABLE_SGF
-#include "KynemaSGF.h"
+#include "src/modules/KynemaSGF.h"
 #endif
 #ifdef KYNEMA_DRIVER_ENABLE_UGF
-#include "KynemaUGF.h"
+#include "src/modules/KynemaUGF.h"
 #endif
 #ifdef KYNEMA_DRIVER_ENABLE_FMB
-#include "KynemaFMB.h"
+#include "src/modules/KynemaFMB.h"
 #include <Kokkos_Core.hpp>
 #endif
 #ifdef KYNEMA_DRIVER_ENABLE_ROCM
@@ -229,7 +229,7 @@ int run(int argc, char** argv, int size, int rank)
     std::ofstream out;
 
     {
-        driver::OversetSimulation sim(MPI_COMM_WORLD);
+        driver::Simulation sim(MPI_COMM_WORLD);
         sim.set_holemap_alg(
             node["use_adaptive_holemap"]
                 ? node["use_adaptive_holemap"].as<bool>()

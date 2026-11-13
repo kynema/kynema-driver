@@ -1,8 +1,8 @@
-#ifndef OVERSETSIMULATION_H
-#define OVERSETSIMULATION_H
+#ifndef DRIVER_SIMULATION_H
+#define DRIVER_SIMULATION_H
 #include "mpi.h"
 #include "tioga.h"
-#include "KynemaSolver.h"
+#include "Module.h"
 #include "ParallelPrinter.h"
 #include "Timers.h"
 
@@ -12,13 +12,13 @@ class tioga;
 
 namespace driver {
 
-class OversetSimulation
+class Simulation
 {
 private:
     //! World communicator instance
     MPI_Comm m_comm;
     //! List of solvers active in this overset simulation
-    std::vector<std::unique_ptr<KynemaSolver>> m_solvers;
+    std::vector<std::unique_ptr<Module>> m_solvers;
     //! Flag indicating whether an AMR solver is active
     bool m_has_amr{false};
     //! Flag indicating whether an unstructured solver is active
@@ -57,22 +57,22 @@ private:
     Timers m_timers_tg;
 
 public:
-    OversetSimulation(MPI_Comm comm);
-    ~OversetSimulation();
+    Simulation(MPI_Comm comm);
+    ~Simulation();
 
     //! Register a solver (legacy - passes Tioga instance)
-    template <class Solver, class... Args>
+    template <class ModuleType, class... Args>
     void register_solver(Args... args)
     {
         m_solvers.emplace_back(
-            std::make_unique<Solver>(std::forward<Args>(args)..., m_tg));
+            std::make_unique<ModuleType>(std::forward<Args>(args)..., m_tg));
     }
 
     //! Register a solver without Tioga (for standalone solvers like FMB)
-    template <class Solver, class... Args>
-    Solver& register_solver_no_tioga(Args... args)
+    template <class ModuleType, class... Args>
+    ModuleType& register_solver_no_tioga(Args... args)
     {
-        auto solver = std::make_unique<Solver>(std::forward<Args>(args)...);
+        auto solver = std::make_unique<ModuleType>(std::forward<Args>(args)...);
         auto& result = *solver;
         m_solvers.emplace_back(std::move(solver));
         return result;
@@ -143,4 +143,4 @@ public:
 };
 
 } // namespace driver
-#endif /* OVERSETSIMULATION_H */
+#endif /* DRIVER_SIMULATION_H */

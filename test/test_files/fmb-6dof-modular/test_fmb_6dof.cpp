@@ -1,5 +1,5 @@
-#include "KynemaFMB.h"
-#include "OversetSimulation.h"
+#include "src/modules/KynemaFMB.h"
+#include "src/Simulation.h"
 #include "interfaces/generalized/generalized_structure_interface.hpp"
 
 #include <Kokkos_Core.hpp>
@@ -18,7 +18,7 @@ void run_test(const char* input_file)
 {
     using Interface = kynema_fmb::interfaces::GeneralStructureInterface;
     const YAML::Node input = YAML::LoadFile(input_file);
-    driver::OversetSimulation simulation(MPI_COMM_WORLD);
+    driver::Simulation simulation(MPI_COMM_WORLD);
     auto& solver = simulation.register_solver_no_tioga<driver::KynemaFMB>(
         input, MPI_COMM_WORLD);
     simulation.initialize();

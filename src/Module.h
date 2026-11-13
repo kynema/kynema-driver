@@ -1,16 +1,16 @@
-#ifndef KYNEMASOLVER_H
-#define KYNEMASOLVER_H
+#ifndef DRIVER_MODULE_H
+#define DRIVER_MODULE_H
 
 #include "Timers.h"
 #include "ParallelPrinter.h"
 
 namespace driver {
 
-class KynemaSolver
+class Module
 {
 public:
-    explicit KynemaSolver() : m_timers(m_names) {};
-    virtual ~KynemaSolver();
+    explicit Module() : m_timers(m_names) {};
+    virtual ~Module();
 
     void call_init_prolog(bool multi_solver_mode = true)
     {
@@ -126,7 +126,7 @@ public:
     virtual bool is_fixed_timestep_size() = 0;
     virtual int overset_update_interval() { return 100000000; };
     virtual int time_index() = 0;
-    virtual std::string identifier() { return "KynemaSolver"; }
+    virtual std::string identifier() { return "Module"; }
     virtual MPI_Comm comm() = 0;
     virtual int get_ncomps() { return 0; };
     void timing_details();
@@ -161,4 +161,4 @@ protected:
 };
 
 } // namespace driver
-#endif /* KYNEMASOLVER_H */
+#endif /* DRIVER_MODULE_H */

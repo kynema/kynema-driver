@@ -1,4 +1,4 @@
-#include "OversetSimulation.h"
+#include "Simulation.h"
 #include "MemoryUsage.h"
 #include "Timers.h"
 #include <algorithm>
@@ -7,7 +7,7 @@
 
 namespace driver {
 
-OversetSimulation::OversetSimulation(MPI_Comm comm)
+Simulation::Simulation(MPI_Comm comm)
     : m_comm(comm)
     , m_printer(comm)
     , m_timers_kyn(m_names_exa)
@@ -20,9 +20,9 @@ OversetSimulation::OversetSimulation(MPI_Comm comm)
     m_printer.reset();
 }
 
-OversetSimulation::~OversetSimulation() = default;
+Simulation::~Simulation() = default;
 
-void OversetSimulation::check_solver_types()
+void Simulation::check_solver_types()
 {
     bool flag[2] = {false, false};
     bool gflag[2] = {false, false};
@@ -39,7 +39,7 @@ void OversetSimulation::check_solver_types()
     m_has_unstructured = gflag[1];
 }
 
-void OversetSimulation::determine_overset_interval()
+void Simulation::determine_overset_interval()
 {
     int flag[1] = {m_overset_update_interval};
     int gflag[1] = {m_overset_update_interval};
@@ -53,7 +53,7 @@ void OversetSimulation::determine_overset_interval()
         std::to_string(m_overset_update_interval));
 }
 
-void OversetSimulation::initialize()
+void Simulation::initialize()
 {
     check_solver_types();
     int local_solvers = 0;
@@ -108,7 +108,7 @@ void OversetSimulation::initialize()
     m_initialized = true;
 }
 
-void OversetSimulation::perform_overset_connectivity()
+void Simulation::perform_overset_connectivity()
 {
     if (!m_use_overset) return;
     for (auto& ss : m_solvers) ss->call_pre_overset_conn_work();
@@ -129,7 +129,7 @@ void OversetSimulation::perform_overset_connectivity()
     for (auto& ss : m_solvers) ss->call_post_overset_conn_work();
 }
 
-void OversetSimulation::exchange_solution(bool increment_time)
+void Simulation::exchange_solution(bool increment_time)
 {
     // SGF and UGF need their second pre-advance stage after connectivity.
     for (auto& ss : m_solvers) ss->call_prepare_solution_exchange();
@@ -154,7 +154,7 @@ void OversetSimulation::exchange_solution(bool increment_time)
     for (auto& ss : m_solvers) ss->call_update_solution();
 }
 
-void OversetSimulation::run_timesteps(
+void Simulation::run_timesteps(
     const int add_pic_its,
     const int nonlinear_its,
     const int nsteps,
@@ -162,7 +162,7 @@ void OversetSimulation::run_timesteps(
 {
 
     if (!m_initialized) {
-        throw std::runtime_error("OversetSimulation has not been initialized");
+        throw std::runtime_error("Simulation has not been initialized");
     }
 
     const int tstart = m_last_timestep + 1;
@@ -256,12 +256,12 @@ void OversetSimulation::run_timesteps(
     m_last_timestep = nt - 1;
 }
 
-bool OversetSimulation::do_connectivity(const int tstep)
+bool Simulation::do_connectivity(const int tstep)
 {
     return (tstep > 0) && (tstep % m_overset_update_interval) == 0;
 }
 
-void OversetSimulation::print_timing(const int nt)
+void Simulation::print_timing(const int nt)
 {
     // overall timestep timing
     auto timing_summary = m_timers_kyn.get_timings_summary(
@@ -301,7 +301,7 @@ void OversetSimulation::print_timing(const int nt)
     MPI_Barrier(m_comm);
 }
 
-long OversetSimulation::mem_usage_all(const int step)
+long Simulation::mem_usage_all(const int step)
 {
     const long mem = memory_usage();
 
@@ -314,7 +314,7 @@ long OversetSimulation::mem_usage_all(const int step)
         &mem, 1, MPI_LONG, memall.data(), 1, MPI_LONG, m_printer.io_rank(),
         m_comm);
 
-    // FIXME: move to separate output files and put in KynemaSolver
+    // FIXME: move to separate output files and put in Module
     if (m_printer.is_io_rank()) {
         const std::string filename = "memusage.dat";
         std::ofstream fp;

@@ -1,31 +1,31 @@
 target_sources(${KYNEMA_DRIVER_LIB_NAME} PRIVATE
-  KynemaSolver.h
-  KynemaSolver.cpp
+  Module.h
+  Module.cpp
   MPIUtilities.h
-  OversetSimulation.cpp
-  OversetSimulation.h
+  Simulation.cpp
+  Simulation.h
   ParallelPrinter.h
   MemoryUsage.h
   MemoryUsage.cpp)
 
 if(KYNEMA_DRIVER_ENABLE_FMB)
-  target_sources(${KYNEMA_DRIVER_LIB_NAME} PRIVATE KynemaFMB.cpp KynemaFMB.h)
+  target_sources(${KYNEMA_DRIVER_LIB_NAME} PRIVATE modules/KynemaFMB.cpp modules/KynemaFMB.h)
   target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC KynemaFMB::kynema_fmb_library)
   target_compile_definitions(${KYNEMA_DRIVER_LIB_NAME} PUBLIC KYNEMA_DRIVER_ENABLE_FMB)
 endif()
 if(KYNEMA_DRIVER_ENABLE_SGF)
-  target_sources(${KYNEMA_DRIVER_LIB_NAME} PRIVATE SGFTiogaIface.cpp SGFTiogaIface.h KynemaSGF.cpp KynemaSGF.h)
+  target_sources(${KYNEMA_DRIVER_LIB_NAME} PRIVATE modules/SGFTiogaIface.cpp modules/SGFTiogaIface.h modules/KynemaSGF.cpp modules/KynemaSGF.h)
   target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC Kynema-SGF::kynema_sgf_api Kynema-SGF::buildInfokynema_sgf_obj AMReX::amrex)
   target_compile_definitions(${KYNEMA_DRIVER_LIB_NAME} PUBLIC KYNEMA_DRIVER_ENABLE_SGF)
 endif()
 if(KYNEMA_DRIVER_ENABLE_UGF)
-  target_sources(${KYNEMA_DRIVER_LIB_NAME} PRIVATE KynemaUGF.cpp KynemaUGF.h)
+  target_sources(${KYNEMA_DRIVER_LIB_NAME} PRIVATE modules/KynemaUGF.cpp modules/KynemaUGF.h)
   target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC Kynema-UGF::kynema_ugf_lib)
   target_compile_definitions(${KYNEMA_DRIVER_LIB_NAME} PUBLIC KYNEMA_DRIVER_ENABLE_UGF)
 endif()
 
 target_include_directories(${KYNEMA_DRIVER_LIB_NAME} PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR})
+  ${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 target_link_libraries(${KYNEMA_DRIVER_LIB_NAME} PUBLIC yaml-cpp tioga)
 

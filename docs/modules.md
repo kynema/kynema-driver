@@ -1,5 +1,11 @@
 # Module selection and execution
 
+The driver coordinator is `driver::Simulation` in `src/Simulation.h`.
+The shared module interface is `driver::Module` in `src/Module.h`.
+Module implementations and the SGF Tioga adapter live in `src/modules/`.
+Include driver headers with their `src/` paths to distinguish the driver's
+`Simulation.h` from the UGF library header of the same name.
+
 Select modules in the `kynema_driver` YAML mapping. Existing SGF and UGF
 configuration keys remain supported. FMB accepts either one input filename or
 a list:

@@ -7,7 +7,7 @@
 #include "Simulation.h"
 #include "stk_util/parallel/Parallel.hpp"
 #include "yaml-cpp/yaml.h"
-#include "KynemaSolver.h"
+#include "../Module.h"
 
 namespace TIOGA {
 class tioga;
@@ -15,7 +15,7 @@ class tioga;
 
 namespace driver {
 
-class KynemaUGF : public KynemaSolver
+class KynemaUGF : public Module
 {
 private:
     YAML::Node m_doc;

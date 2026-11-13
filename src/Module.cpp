@@ -1,7 +1,7 @@
-#include "KynemaSolver.h"
+#include "Module.h"
 #include "MemoryUsage.h"
 
 namespace driver {
-KynemaSolver::~KynemaSolver() = default;
+Module::~Module() = default;
 
 } // namespace driver

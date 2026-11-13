@@ -1,7 +1,7 @@
 #ifndef KYNEMAFMB_H
 #define KYNEMAFMB_H
 
-#include "KynemaSolver.h"
+#include "../Module.h"
 #include "mpi.h"
 #include "yaml-cpp/yaml.h"
 #include <array>
@@ -20,7 +20,7 @@ namespace driver {
  * This class wraps the GeneralStructureInterface from Kynema-FMB
  * to conform to the modular solver interface.
  */
-class KynemaFMB : public KynemaSolver
+class KynemaFMB : public Module
 {
 public:
     /**
