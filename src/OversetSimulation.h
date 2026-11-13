@@ -55,7 +55,7 @@ private:
     const std::vector<std::string> m_names_exa{"TimeStep"};
     const std::vector<std::string> m_names_tg{"Connectivity", "SolExchange"};
     //! Timer
-    Timers m_timers_exa;
+    Timers m_timers_kyn;
     Timers m_timers_tg;
 
 public:
@@ -74,7 +74,8 @@ public:
     template <class Solver, class... Args>
     void register_solver_no_tioga(Args... args)
     {
-        m_solvers.emplace_back(std::make_unique<Solver>(std::forward<Args>(args)...));
+        m_solvers.emplace_back(
+            std::make_unique<Solver>(std::forward<Args>(args)...));
     }
 
     //! Delete solvers

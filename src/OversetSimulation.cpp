@@ -9,7 +9,7 @@ namespace driver {
 OversetSimulation::OversetSimulation(MPI_Comm comm)
     : m_comm(comm)
     , m_printer(comm)
-    , m_timers_exa(m_names_exa)
+    , m_timers_kyn(m_names_exa)
     , m_timers_tg(m_names_tg)
 {
     int psize, prank;
@@ -156,7 +156,7 @@ void OversetSimulation::run_timesteps(
     while (do_step) {
         m_printer.echo_time_header();
 
-        m_timers_exa.tick("TimeStep");
+        m_timers_kyn.tick("TimeStep");
 
         for (size_t inonlin = 0; inonlin < static_cast<size_t>(nonlinear_its);
              inonlin++) {
@@ -170,7 +170,8 @@ void OversetSimulation::run_timesteps(
                 ss->call_set_inputs(inonlin, increment_timer);
             }
 
-            // Compute and communicate timestep (first iteration only, adaptive dt)
+            // Compute and communicate timestep (first iteration only, adaptive
+            // dt)
             if (inonlin < 1 && !m_fixed_dt) {
                 double dt{1e8};
                 for (auto& ss : m_solvers) {
@@ -212,7 +213,7 @@ void OversetSimulation::run_timesteps(
 
         MPI_Barrier(m_comm);
 
-        m_timers_exa.tock("TimeStep");
+        m_timers_kyn.tock("TimeStep");
 
         MPI_Barrier(m_comm);
 
@@ -240,11 +241,11 @@ bool OversetSimulation::do_connectivity(const int tstep)
 void OversetSimulation::print_timing(const int nt)
 {
     // overall timestep timing
-    auto timing_summary = m_timers_exa.get_timings_summary(
+    auto timing_summary = m_timers_kyn.get_timings_summary(
         "Kynema", nt, m_comm, m_printer.io_rank());
     m_printer.echo(timing_summary);
 
-    auto timing_detail = m_timers_exa.get_timings_detail(
+    auto timing_detail = m_timers_kyn.get_timings_detail(
         "Kynema", nt, m_comm, m_printer.io_rank());
     m_printer.timing_to_file(timing_detail);
 
