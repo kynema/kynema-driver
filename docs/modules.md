@@ -8,7 +8,8 @@ Register modules through `register_module()` (Tioga adapters) or
 Every module implements `reset_states()`, called before advancing subsequent
 nonlinear iterations. SGF and UGF currently keep their existing state handling
 and implement this hook as a no-op.
-Module implementations and the SGF Tioga adapter live in `src/modules/`.
+Driver module adapters live in `src/modules/`. SGF owns its Tioga bridge in
+`src/overset/SGFTiogaIface.H` and requires Tioga when built.
 Include driver headers with their `src/` paths to distinguish the driver's
 `Simulation.h` from the UGF library header of the same name.
 

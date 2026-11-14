@@ -1,5 +1,5 @@
 #include "src/incflo.H"
-#include "SGFTiogaIface.h"
+#include "src/overset/SGFTiogaIface.H"
 #include "../Module.h"
 
 namespace TIOGA {
@@ -12,7 +12,7 @@ class KynemaSGF : public Module
 {
 private:
     incflo m_incflo;
-    SGFTiogaIface m_tgiface;
+    kynema_sgf::SGFTiogaIface m_tgiface;
     std::vector<std::string> m_cell_vars;
     std::vector<std::string> m_node_vars;
     bool m_stage2_pending{false};
