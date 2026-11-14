@@ -14,12 +14,32 @@
 
 namespace {
 
+class NonCFDModule : public driver::KynemaFMB
+{
+public:
+    using driver::KynemaFMB::KynemaFMB;
+    int overset_update_interval() override { reject_overset(); }
+
+protected:
+    void pre_overset_conn_work() override { reject_overset(); }
+    void post_overset_conn_work() override { reject_overset(); }
+    void prepare_solution_exchange() override { reject_overset(); }
+    void register_solution() override { reject_overset(); }
+    void update_solution() override { reject_overset(); }
+
+private:
+    [[noreturn]] static void reject_overset()
+    {
+        throw std::runtime_error("Overset hook called on a non-CFD module");
+    }
+};
+
 void run_test(const char* input_file)
 {
     using Interface = kynema_fmb::interfaces::GeneralStructureInterface;
     const YAML::Node input = YAML::LoadFile(input_file);
     driver::Simulation simulation(MPI_COMM_WORLD);
-    auto& module = simulation.register_module_no_tioga<driver::KynemaFMB>(
+    auto& module = simulation.register_module_no_tioga<NonCFDModule>(
         input, MPI_COMM_WORLD);
     simulation.initialize();
 

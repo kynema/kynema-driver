@@ -136,28 +136,32 @@ if(KYNEMA_DRIVER_ENABLE_SGF OR KYNEMA_DRIVER_ENABLE_UGF)
       COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS}
         $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> ${MPIEXEC_POSTFLAGS}
         --sgf 2 driver-sgf-only.yaml)
-    set_tests_properties(sgf-cli-single PROPERTIES WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS regression TIMEOUT 90 RUN_SERIAL TRUE)
+    set_tests_properties(sgf-cli-single PROPERTIES WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS regression TIMEOUT 90 RUN_SERIAL TRUE
+      FAIL_REGULAR_EXPRESSION "Overset update interval")
   endif()
   if(KYNEMA_DRIVER_ENABLE_UGF)
     add_test(NAME ugf-cli-single
       COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS}
         $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> ${MPIEXEC_POSTFLAGS}
         --ugf 2 driver-ugf-only.yaml)
-    set_tests_properties(ugf-cli-single PROPERTIES WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS regression TIMEOUT 90 RUN_SERIAL TRUE)
+    set_tests_properties(ugf-cli-single PROPERTIES WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS regression TIMEOUT 90 RUN_SERIAL TRUE
+      FAIL_REGULAR_EXPRESSION "Overset update interval")
   endif()
   if(KYNEMA_DRIVER_ENABLE_FMB AND KYNEMA_DRIVER_ENABLE_SGF)
     add_test(NAME sgf-fmb-cli
       COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS}
         $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> ${MPIEXEC_POSTFLAGS}
         --sgf 2 --fmb 1 driver-sgf-fmb.yaml)
-    set_tests_properties(sgf-fmb-cli PROPERTIES WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS regression TIMEOUT 90 RUN_SERIAL TRUE)
+    set_tests_properties(sgf-fmb-cli PROPERTIES WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS regression TIMEOUT 90 RUN_SERIAL TRUE
+      FAIL_REGULAR_EXPRESSION "Overset update interval")
   endif()
   if(KYNEMA_DRIVER_ENABLE_FMB AND KYNEMA_DRIVER_ENABLE_UGF)
     add_test(NAME ugf-fmb-cli
       COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 ${MPIEXEC_PREFLAGS}
         $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> ${MPIEXEC_POSTFLAGS}
         --ugf 2 --fmb 1 driver-ugf-fmb.yaml)
-    set_tests_properties(ugf-fmb-cli PROPERTIES WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS regression TIMEOUT 90 RUN_SERIAL TRUE)
+    set_tests_properties(ugf-fmb-cli PROPERTIES WORKING_DIRECTORY "${CURRENT_TEST_BINARY_DIR}" LABELS regression TIMEOUT 90 RUN_SERIAL TRUE
+      FAIL_REGULAR_EXPRESSION "Overset update interval")
   endif()
   if(KYNEMA_DRIVER_ENABLE_FMB AND KYNEMA_DRIVER_ENABLE_UGF AND KYNEMA_DRIVER_ENABLE_SGF)
     add_test(NAME all-modules-cli
@@ -202,6 +206,8 @@ if(KYNEMA_DRIVER_ENABLE_FMB)
       --fmb 1 driver-fmb-max-time.yaml)
   set_tests_properties(fmb-cli-max-time PROPERTIES
     PASS_REGULAR_EXPRESSION "KynemaFMB final time: 0.25 seconds")
+  set_tests_properties(fmb-cli-single fmb-cli-multiple fmb-cli-max-time PROPERTIES
+    FAIL_REGULAR_EXPRESSION "Overset update interval")
   add_test(NAME cli-no-modules
     COMMAND $<TARGET_FILE:${KYNEMA_DRIVER_EXE_NAME}> driver-no-modules.yaml)
   add_test(NAME cli-invalid-ranks

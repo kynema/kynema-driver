@@ -59,6 +59,11 @@ installation without a dependency on the driver library.
 sibling `kynema-driver/src` directory and is not an integration toggle.
 SGF and UGF still use adapters pending refactoring in their respective repositories.
 
-Modules execute in the same timestep loop. SGF/UGF overset exchange is
-performed when multiple CFD modules are selected. FMB currently runs alongside
-the other modules but does not yet exchange forces or displacements with them.
+Modules execute in the same timestep loop. Overset hooks are optional no-ops in
+`Module`; only CFD modules opt in with `is_cfd()` and implement them.
+Overset activates only with at least two CFD modules or instances, counted
+once per module communicator, regardless of rank count or non-CFD modules.
+Connectivity and overset exchange skip non-CFD modules. SGF/UGF still run their
+pre-advance preparation when overset is disabled.
+FMB currently runs alongside the other modules but does not yet exchange forces
+or displacements with them.

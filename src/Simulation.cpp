@@ -28,11 +28,11 @@ void Simulation::check_module_types()
     bool gflag[2] = {false, false};
     flag[0] =
         std::any_of(m_modules.begin(), m_modules.end(), [](const auto& module) {
-            return module->is_amr();
+            return module->is_cfd() && module->is_amr();
         });
     flag[1] =
         std::any_of(m_modules.begin(), m_modules.end(), [](const auto& module) {
-            return module->is_unstructured();
+            return module->is_cfd() && module->is_unstructured();
         });
     MPI_Allreduce(flag, gflag, 2, MPI_C_BOOL, MPI_LOR, m_comm);
     m_has_amr = gflag[0];
@@ -41,10 +41,12 @@ void Simulation::check_module_types()
 
 void Simulation::determine_overset_interval()
 {
+    if (!m_use_overset) return;
     int flag[1] = {m_overset_update_interval};
     int gflag[1] = {m_overset_update_interval};
     for (auto& module : m_modules) {
-        flag[0] = std::min(flag[0], module->overset_update_interval());
+        if (module->is_cfd())
+            flag[0] = std::min(flag[0], module->overset_update_interval());
     }
     MPI_Allreduce(flag, gflag, 1, MPI_INT, MPI_MIN, m_comm);
     m_overset_update_interval = gflag[0];
@@ -63,7 +65,7 @@ void Simulation::initialize()
         MPI_Comm_rank(module->comm(), &rank);
         if (rank == 0) {
             ++local_modules;
-            if (module->is_amr() || module->is_unstructured()) ++local_cfd_modules;
+            if (module->is_cfd()) ++local_cfd_modules;
         }
     }
     int global_modules = 0, global_cfd_modules = 0;
@@ -111,7 +113,8 @@ void Simulation::initialize()
 void Simulation::perform_overset_connectivity()
 {
     if (!m_use_overset) return;
-    for (auto& module : m_modules) module->call_pre_overset_conn_work();
+    for (auto& module : m_modules)
+        if (module->is_cfd()) module->call_pre_overset_conn_work();
 
     m_timers_tg.tick("Connectivity");
     if (m_has_amr) m_tg.preprocess_amr_data();
@@ -126,15 +129,18 @@ void Simulation::perform_overset_connectivity()
     if (m_has_amr) m_tg.performConnectivityAMR();
     m_timers_tg.tock("Connectivity");
 
-    for (auto& module : m_modules) module->call_post_overset_conn_work();
+    for (auto& module : m_modules)
+        if (module->is_cfd()) module->call_post_overset_conn_work();
 }
 
 void Simulation::exchange_solution(bool increment_time)
 {
     // SGF and UGF need their second pre-advance stage after connectivity.
-    for (auto& module : m_modules) module->call_prepare_solution_exchange();
+    for (auto& module : m_modules)
+        if (module->is_cfd()) module->call_prepare_solution_exchange();
     if (!m_use_overset) return;
-    for (auto& module : m_modules) module->call_register_solution();
+    for (auto& module : m_modules)
+        if (module->is_cfd()) module->call_register_solution();
 
     m_timers_tg.tick("SolExchange", increment_time);
     if (m_has_amr) {
@@ -145,13 +151,15 @@ void Simulation::exchange_solution(bool increment_time)
         // number of field components
         int ncomps = 0;
         for (auto& module : m_modules)
-            if (module->is_unstructured()) ncomps = std::max(ncomps, module->get_ncomps());
+            if (module->is_cfd() && module->is_unstructured())
+                ncomps = std::max(ncomps, module->get_ncomps());
         MPI_Allreduce(MPI_IN_PLACE, &ncomps, 1, MPI_INT, MPI_MAX, m_comm);
         m_tg.dataUpdate(ncomps, row_major);
     }
     m_timers_tg.tock("SolExchange");
 
-    for (auto& module : m_modules) module->call_update_solution();
+    for (auto& module : m_modules)
+        if (module->is_cfd()) module->call_update_solution();
 }
 
 void Simulation::run_timesteps(
@@ -263,7 +271,8 @@ void Simulation::run_timesteps(
 
 bool Simulation::do_connectivity(const int tstep)
 {
-    return (tstep > 0) && (tstep % m_overset_update_interval) == 0;
+    return m_use_overset && (tstep > 0) &&
+           (tstep % m_overset_update_interval) == 0;
 }
 
 void Simulation::print_timing(const int nt)

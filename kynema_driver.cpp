@@ -308,7 +308,7 @@ int run(int argc, char** argv, int size, int rank)
                     ? node["sgf_node_vars"].as<std::vector<std::string>>()
                     : std::vector<std::string>{};
             sim.register_module<driver::KynemaSGF>(
-                cvars, nvars, ugf.size() > 0);
+                cvars, nvars);
         }
 #endif
 #ifdef KYNEMA_DRIVER_ENABLE_FMB

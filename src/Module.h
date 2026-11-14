@@ -128,6 +128,7 @@ public:
         m_timers.tock(name);
     }
 
+    virtual bool is_cfd() { return false; };
     virtual bool is_unstructured() { return false; };
     virtual bool is_amr() { return false; };
     virtual bool is_fixed_timestep_size() = 0;
@@ -155,11 +156,11 @@ protected:
     virtual void set_timestep_size(const double) = 0;
     virtual void additional_picard_iterations(const int) = 0;
     virtual void finalize_time_step() = 0;
-    virtual void pre_overset_conn_work() = 0;
-    virtual void post_overset_conn_work() = 0;
-    virtual void register_solution() = 0;
+    virtual void pre_overset_conn_work() {}
+    virtual void post_overset_conn_work() {}
+    virtual void register_solution() {}
     virtual void prepare_solution_exchange() {}
-    virtual void update_solution() = 0;
+    virtual void update_solution() {}
     virtual void dump_simulation_time() = 0;
 
     virtual void set_inputs(size_t inonlin) = 0;
