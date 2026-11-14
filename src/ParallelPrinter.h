@@ -28,6 +28,7 @@ public:
 
     void reset()
     {
+        if (m_rank != m_io_rank) return;
         const std::string filename = "timings.dat";
         remove(filename.c_str());
 

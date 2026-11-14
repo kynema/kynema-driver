@@ -25,6 +25,8 @@ create_subcomm(MPI_Comm comm, const int num_ranks, const int start_rank = 0)
 
     MPI_Comm sub_comm;
     MPI_Comm_create(comm, sub_group, &sub_comm);
+    MPI_Group_free(&sub_group);
+    MPI_Group_free(&world_group);
     return sub_comm;
 }
 

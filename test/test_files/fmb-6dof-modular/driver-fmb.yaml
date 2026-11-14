@@ -1,0 +1,4 @@
+kynema_driver:
+  kynema_fmb_inp: fmb-6dof-modular.yaml
+  num_timesteps: 2
+  nonlinear_iterations: 2

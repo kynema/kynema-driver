@@ -50,7 +50,7 @@ KynemaUGF::KynemaUGF(
 
 KynemaUGF::~KynemaUGF() = default;
 
-void KynemaUGF::init_prolog(bool multi_solver_mode)
+void KynemaUGF::init_prolog(bool multi_module_mode)
 {
     // Dump the input yaml to the start of the logfile
     // before the kynema_ugf banner
@@ -65,37 +65,42 @@ void KynemaUGF::init_prolog(bool multi_solver_mode)
     m_sim.load(m_doc);
     if (m_sim.timeIntegrator_->overset_ != nullptr)
         m_sim.timeIntegrator_->overset_->set_multi_solver_mode(
-            multi_solver_mode);
+            multi_module_mode);
     m_sim.breadboard();
     m_sim.init_prolog();
 }
 
 void KynemaUGF::init_epilog() { m_sim.init_epilog(); }
 
-void KynemaUGF::prepare_solver_prolog()
+void KynemaUGF::prepare_module_prolog()
 {
     m_sim.timeIntegrator_->prepare_for_time_integration();
 }
 
-void KynemaUGF::prepare_solver_epilog()
+void KynemaUGF::prepare_module_epilog()
 {
     for (auto* realm : m_sim.timeIntegrator_->realmVec_)
         realm->output_converged_results();
 }
 
-void KynemaUGF::pre_advance_stage0(size_t inonlin)
+void KynemaUGF::set_inputs(size_t inonlin)
 {
     m_sim.timeIntegrator_->prepare_time_step(inonlin);
 }
 
-void KynemaUGF::pre_advance_stage1(size_t inonlin)
+void KynemaUGF::predict_inputs(size_t inonlin)
 {
     m_sim.timeIntegrator_->pre_realm_advance_stage1(inonlin);
+    m_stage2_iteration = inonlin;
+    m_stage2_pending = true;
 }
 
-void KynemaUGF::pre_advance_stage2(size_t inonlin)
+void KynemaUGF::prepare_solution_exchange()
 {
-    m_sim.timeIntegrator_->pre_realm_advance_stage2(inonlin);
+    if (m_stage2_pending) {
+        m_sim.timeIntegrator_->pre_realm_advance_stage2(m_stage2_iteration);
+        m_stage2_pending = false;
+    }
 }
 
 double KynemaUGF::get_time()
@@ -118,7 +123,7 @@ bool KynemaUGF::is_fixed_timestep_size()
     return m_sim.timeIntegrator_->get_is_fixed_time_step();
 }
 
-void KynemaUGF::advance_timestep(size_t /*inonlin*/)
+void KynemaUGF::advance_states(size_t /*inonlin*/)
 {
     for (auto* realm : m_sim.timeIntegrator_->realmVec_) {
         realm->advance_time_step();
@@ -132,7 +137,10 @@ void KynemaUGF::additional_picard_iterations(const int n)
         realm->nonlinear_iterations(n);
 }
 
-void KynemaUGF::post_advance() { m_sim.timeIntegrator_->post_realm_advance(); }
+void KynemaUGF::finalize_time_step()
+{
+    m_sim.timeIntegrator_->post_realm_advance();
+}
 
 void KynemaUGF::pre_overset_conn_work()
 {

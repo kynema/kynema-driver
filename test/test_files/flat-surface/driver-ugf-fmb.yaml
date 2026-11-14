@@ -1,0 +1,5 @@
+kynema_driver:
+  kynema_ugf_inp: [flat-surface-ugf.yaml]
+  kynema_fmb_inp: ../fmb-6dof-modular/fmb-6dof-modular.yaml
+  ugf_vars: [volume_of_fluid, velocity, density, pressure]
+  num_timesteps: 1

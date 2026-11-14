@@ -1,6 +1,6 @@
 #include "src/incflo.H"
-#include "SGFTiogaIface.h"
-#include "KynemaSolver.h"
+#include "src/overset/SGFTiogaIface.H"
+#include "../Module.h"
 
 namespace TIOGA {
 class tioga;
@@ -8,13 +8,14 @@ class tioga;
 
 namespace driver {
 
-class KynemaSGF : public KynemaSolver
+class KynemaSGF : public Module
 {
 private:
     incflo m_incflo;
-    SGFTiogaIface m_tgiface;
+    kynema_sgf::SGFTiogaIface m_tgiface;
     std::vector<std::string> m_cell_vars;
     std::vector<std::string> m_node_vars;
+    bool m_stage2_pending{false};
 
 public:
     static void
@@ -25,6 +26,7 @@ public:
         const std::vector<std::string>&,
         TIOGA::tioga&);
     ~KynemaSGF();
+    bool is_cfd() override { return true; }
     bool is_unstructured() override { return false; }
     bool is_amr() override { return true; }
     bool is_fixed_timestep_size() override;
@@ -34,21 +36,23 @@ public:
     MPI_Comm comm() override { return m_comm; }
 
 protected:
-    void init_prolog(bool multi_solver_mode = true) override;
+    void init_prolog(bool multi_module_mode = true) override;
     void init_epilog() override;
-    void prepare_solver_prolog() override;
-    void prepare_solver_epilog() override;
-    void pre_advance_stage0(size_t inonlin) override;
-    void pre_advance_stage1(size_t inonlin) override;
-    void pre_advance_stage2(size_t inonlin) override;
+    void prepare_module_prolog() override;
+    void prepare_module_epilog() override;
+    void set_inputs(size_t inonlin) override;
+    void predict_inputs(size_t inonlin) override;
+    void reset_states() override {}
+    void advance_states(size_t inonlin) override;
+    void calculate_outputs(size_t) override {}
     double get_time() override;
     double get_timestep_size() override;
     void set_timestep_size(const double) override;
-    void advance_timestep(size_t inonlin) override;
     void additional_picard_iterations(const int) override {};
-    void post_advance() override;
+    void finalize_time_step() override;
     void pre_overset_conn_work() override;
     void post_overset_conn_work() override;
+    void prepare_solution_exchange() override;
     void register_solution() override;
     void update_solution() override;
     void dump_simulation_time() override {};

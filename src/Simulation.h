@@ -1,8 +1,8 @@
-#ifndef OVERSETSIMULATION_H
-#define OVERSETSIMULATION_H
+#ifndef DRIVER_SIMULATION_H
+#define DRIVER_SIMULATION_H
 #include "mpi.h"
 #include "tioga.h"
-#include "KynemaSolver.h"
+#include "Module.h"
 #include "ParallelPrinter.h"
 #include "Timers.h"
 
@@ -12,25 +12,23 @@ class tioga;
 
 namespace driver {
 
-class OversetSimulation
+class Simulation
 {
 private:
     //! World communicator instance
     MPI_Comm m_comm;
-    //! List of solvers active in this overset simulation
-    std::vector<std::unique_ptr<KynemaSolver>> m_solvers;
-    //! List of start ranks for all kynema-ugf instances
-    int m_num_ugf_solvers;
-    std::vector<int> m_ugf_start_rank;
-    //! Flag indicating whether an AMR solver is active
+    //! List of modules active in this overset simulation
+    std::vector<std::unique_ptr<Module>> m_modules;
+    //! Flag indicating whether an AMR module is active
     bool m_has_amr{false};
-    //! Flag indicating whether an unstructured solver is active
+    //! Flag indicating whether an unstructured module is active
     bool m_has_unstructured{false};
+    bool m_use_overset{false};
     //! Interval for overset updates during timestepping
     int m_overset_update_interval{100000000};
     //! Last timestep run during this simulation
     int m_last_timestep{0};
-    //! Flag indicating whether all solvers use fixed dt. If any solver uses
+    //! Flag indicating whether all modules use fixed dt. If any module uses
     //! adaptive dt, then this flag will be false
     bool m_fixed_dt{true};
     //! Flag indicating whether initialization tasks have been performed
@@ -43,8 +41,8 @@ private:
     int m_num_composite_bodies{0};
     //! Tioga instance
     TIOGA::tioga m_tg;
-    //! Determine unstructured and structured solver types
-    void check_solver_types();
+    //! Determine unstructured and structured module types
+    void check_module_types();
     //! Determine if we should update connectivity during time integration
     void determine_overset_interval();
     //! Return True if connectivity must be updated at a given timestep
@@ -55,36 +53,46 @@ private:
     const std::vector<std::string> m_names_exa{"TimeStep"};
     const std::vector<std::string> m_names_tg{"Connectivity", "SolExchange"};
     //! Timer
-    Timers m_timers_exa;
+    Timers m_timers_kyn;
     Timers m_timers_tg;
 
 public:
-    OversetSimulation(MPI_Comm comm);
-    ~OversetSimulation();
+    Simulation(MPI_Comm comm);
+    ~Simulation();
 
-    //! Register a solver
-    template <class Solver, class... Args>
-    void register_solver(Args... args)
+    //! Register a module (legacy - passes Tioga instance)
+    template <class ModuleType, class... Args>
+    void register_module(Args... args)
     {
-        m_solvers.emplace_back(
-            std::make_unique<Solver>(std::forward<Args>(args)..., m_tg));
+        m_modules.emplace_back(
+            std::make_unique<ModuleType>(std::forward<Args>(args)..., m_tg));
     }
 
-    //! Delete solvers
-    void delete_solvers()
+    //! Register a module without Tioga (for standalone modules like FMB)
+    template <class ModuleType, class... Args>
+    ModuleType& register_module_no_tioga(Args... args)
     {
-        for (auto& ss : m_solvers) {
-            ss.reset();
+        auto module = std::make_unique<ModuleType>(std::forward<Args>(args)...);
+        auto& result = *module;
+        m_modules.emplace_back(std::move(module));
+        return result;
+    }
+
+    //! Delete modules
+    void delete_modules()
+    {
+        for (auto& module : m_modules) {
+            module.reset();
         }
     }
 
-    //! Initialize all solvers
+    //! Initialize all modules
     void initialize();
 
     //! Determine field, fringe, hole information
     void perform_overset_connectivity();
 
-    //! Exchange solution between solvers
+    //! Exchange solution between modules
     void exchange_solution(const bool increment_time = false);
 
     //! Run prescribed number of timesteps
@@ -102,17 +110,6 @@ public:
 
     //! track memory usage and print to file
     long mem_usage_all(const int step);
-
-    //! set number of kynema-ugf instances
-    void set_ugf_start_rank(const std::vector<int>& start_ranks)
-    {
-        if (!start_ranks.empty()) {
-            m_ugf_start_rank = start_ranks;
-        } else {
-            m_ugf_start_rank.clear();
-        }
-        m_num_ugf_solvers = m_ugf_start_rank.size();
-    }
 
     void set_holemap_alg(bool alg)
     {
@@ -146,4 +143,4 @@ public:
 };
 
 } // namespace driver
-#endif /* OVERSETSIMULATION_H */
+#endif /* DRIVER_SIMULATION_H */
